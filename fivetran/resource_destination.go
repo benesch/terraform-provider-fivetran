@@ -19,7 +19,6 @@ func resourceDestination() *schema.Resource {
 		DeleteContext: resourceDestinationDelete,
 		Importer:      &schema.ResourceImporter{StateContext: schema.ImportStatePassthroughContext},
 		Schema: map[string]*schema.Schema{
-			"id":                 {Type: schema.TypeString, Computed: true},
 			"group_id":           {Type: schema.TypeString, Required: true, ForceNew: true},
 			"service":            {Type: schema.TypeString, Required: true, ForceNew: true},
 			"region":             {Type: schema.TypeString, Required: true},
@@ -106,7 +105,7 @@ func resourceDestinationRead(ctx context.Context, d *schema.ResourceData, m inte
 	client := m.(*fivetran.Client)
 	svc := client.NewDestinationDetails()
 
-	resp, err := svc.DestinationID(d.Get("id").(string)).Do(ctx)
+	resp, err := svc.DestinationID(d.Id()).Do(ctx)
 	if err != nil {
 		return newDiagAppend(diags, diag.Error, "read error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}
@@ -138,7 +137,7 @@ func resourceDestinationUpdate(ctx context.Context, d *schema.ResourceData, m in
 	client := m.(*fivetran.Client)
 	svc := client.NewDestinationModify()
 
-	svc.DestinationID(d.Get("id").(string))
+	svc.DestinationID(d.Id())
 
 	if d.HasChange("region") {
 		svc.Region(d.Get("region").(string))
@@ -175,7 +174,7 @@ func resourceDestinationDelete(ctx context.Context, d *schema.ResourceData, m in
 	client := m.(*fivetran.Client)
 	svc := client.NewDestinationDelete()
 
-	resp, err := svc.DestinationID(d.Get("id").(string)).Do(ctx)
+	resp, err := svc.DestinationID(d.Id()).Do(ctx)
 	if err != nil {
 		return newDiagAppend(diags, diag.Error, "delete error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}

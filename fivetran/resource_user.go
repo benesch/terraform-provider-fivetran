@@ -18,7 +18,6 @@ func resourceUser() *schema.Resource {
 		DeleteContext: resourceUserDelete,
 		Importer:      &schema.ResourceImporter{StateContext: schema.ImportStatePassthroughContext},
 		Schema: map[string]*schema.Schema{
-			"id": {Type: schema.TypeString, Computed: true},
 			// The REST API doesn't provide a method to change the the user's email address.
 			// That's why "ForceNew" is true.
 			"email":       {Type: schema.TypeString, Required: true, ForceNew: true},
@@ -70,7 +69,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	client := m.(*fivetran.Client)
 	svc := client.NewUserDetails()
 
-	svc.UserID(d.Get("id").(string)).Do(ctx)
+	svc.UserID(d.Id()).Do(ctx)
 
 	resp, err := svc.Do(ctx)
 	if err != nil {
@@ -103,7 +102,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	client := m.(*fivetran.Client)
 	svc := client.NewUserModify()
 
-	svc.UserID(d.Get("id").(string))
+	svc.UserID(d.Id())
 
 	if d.HasChange("given_name") {
 		svc.GivenName(d.Get("given_name").(string))
@@ -137,7 +136,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 	client := m.(*fivetran.Client)
 	svc := client.NewUserDelete()
 
-	resp, err := svc.UserID(d.Get("id").(string)).Do(ctx)
+	resp, err := svc.UserID(d.Id()).Do(ctx)
 	if err != nil {
 		return newDiagAppend(diags, diag.Error, "delete error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}

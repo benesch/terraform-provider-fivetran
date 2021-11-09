@@ -19,7 +19,6 @@ func resourceGroup() *schema.Resource {
 		DeleteContext: resourceGroupDelete,
 		Importer:      &schema.ResourceImporter{StateContext: schema.ImportStatePassthroughContext},
 		Schema: map[string]*schema.Schema{
-			"id":         {Type: schema.TypeString, Computed: true},
 			"name":       {Type: schema.TypeString, Required: true},
 			"created_at": {Type: schema.TypeString, Computed: true},
 			"user":       resourceGroupSchemaUser(),
@@ -96,7 +95,7 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, m interface{
 	client := m.(*fivetran.Client)
 	svc := client.NewGroupDetails()
 
-	groupID := d.Get("id").(string)
+	groupID := d.Id()
 	creatorID := d.Get("creator").(string)
 	users := d.Get("user").(*schema.Set).List()
 	svc.GroupID(groupID)
@@ -132,7 +131,7 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	svc := client.NewGroupModify()
 	var change bool
 
-	groupID := d.Get("id").(string)
+	groupID := d.Id()
 	svc.GroupID(groupID)
 
 	if d.HasChange("name") {
@@ -172,7 +171,7 @@ func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	client := m.(*fivetran.Client)
 	svc := client.NewGroupDelete()
 
-	resp, err := svc.GroupID(d.Get("id").(string)).Do(ctx)
+	resp, err := svc.GroupID(d.Id()).Do(ctx)
 	if err != nil {
 		return newDiagAppend(diags, diag.Error, "delete error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}

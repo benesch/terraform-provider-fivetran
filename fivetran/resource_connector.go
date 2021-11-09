@@ -18,7 +18,6 @@ func resourceConnector() *schema.Resource {
 		DeleteContext: resourceConnectorDelete,
 		Importer:      &schema.ResourceImporter{StateContext: schema.ImportStatePassthroughContext},
 		Schema: map[string]*schema.Schema{
-			"id":                 {Type: schema.TypeString, Computed: true},
 			"group_id":           {Type: schema.TypeString, Required: true, ForceNew: true},
 			"service":            {Type: schema.TypeString, Required: true, ForceNew: true},
 			"service_version":    {Type: schema.TypeString, Computed: true},
@@ -364,7 +363,7 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 	var diags diag.Diagnostics
 	client := m.(*fivetran.Client)
 
-	resp, err := client.NewConnectorDetails().ConnectorID(d.Get("id").(string)).Do(ctx)
+	resp, err := client.NewConnectorDetails().ConnectorID(d.Id()).Do(ctx)
 	if err != nil {
 		return newDiagAppend(diags, diag.Error, "service error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}
@@ -402,7 +401,7 @@ func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	client := m.(*fivetran.Client)
 	svc := client.NewConnectorModify()
 
-	svc.ConnectorID(d.Get("id").(string))
+	svc.ConnectorID(d.Id())
 
 	if d.HasChange("sync_frequency") {
 		svc.SyncFrequency(strToInt(d.Get("sync_frequency").(string)))
@@ -445,7 +444,7 @@ func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m inte
 	client := m.(*fivetran.Client)
 	svc := client.NewConnectorDelete()
 
-	resp, err := svc.ConnectorID(d.Get("id").(string)).Do(ctx)
+	resp, err := svc.ConnectorID(d.Id()).Do(ctx)
 	if err != nil {
 		return newDiagAppend(diags, diag.Error, "delete error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}
