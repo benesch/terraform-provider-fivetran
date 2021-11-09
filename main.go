@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/fivetran/terraform-provider-fivetran/fivetran"
+	"github.com/benesch/terraform-provider-fivetran/fivetran"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )

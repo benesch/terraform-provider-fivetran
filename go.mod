@@ -1,4 +1,4 @@
-module github.com/fivetran/terraform-provider-fivetran
+module github.com/benesch/terraform-provider-fivetran
 
 require (
 	github.com/fivetran/go-fivetran v0.2.2
