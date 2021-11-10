@@ -78,7 +78,6 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	// msi stands for Map String Interface
 	msi := make(map[string]interface{})
-	msi["id"] = resp.Data.ID
 	msi["email"] = resp.Data.Email
 	msi["given_name"] = resp.Data.GivenName
 	msi["family_name"] = resp.Data.FamilyName
@@ -93,6 +92,8 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 			return newDiagAppend(diags, diag.Error, "set error", fmt.Sprint(err))
 		}
 	}
+
+	d.SetId(resp.Data.ID)
 
 	return diags
 }

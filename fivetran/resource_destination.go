@@ -112,7 +112,6 @@ func resourceDestinationRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	// msi stands for Map String Interface
 	msi := make(map[string]interface{})
-	msi["id"] = resp.Data.ID
 	msi["group_id"] = resp.Data.GroupID
 	msi["service"] = resp.Data.Service
 	msi["region"] = resp.Data.Region
@@ -128,6 +127,8 @@ func resourceDestinationRead(ctx context.Context, d *schema.ResourceData, m inte
 			return newDiagAppend(diags, diag.Error, "set error", fmt.Sprint(err))
 		}
 	}
+
+	d.SetId(resp.Data.ID)
 
 	return diags
 }

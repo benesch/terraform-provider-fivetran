@@ -112,7 +112,6 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, m interface{
 
 	// msi stands for Map String Interface
 	msi := make(map[string]interface{})
-	msi["id"] = resp.Data.ID
 	msi["name"] = resp.Data.Name
 	msi["user"] = resourceGroupFlattenGroupUsers(&respUsers, users, creatorID)
 	msi["created_at"] = resp.Data.CreatedAt.String()
@@ -121,6 +120,8 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, m interface{
 			return newDiagAppend(diags, diag.Error, "set error", fmt.Sprint(err))
 		}
 	}
+
+	d.SetId(resp.Data.ID)
 
 	return diags
 }

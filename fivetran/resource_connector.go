@@ -370,7 +370,6 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	// msi stands for Map String Interface
 	msi := make(map[string]interface{})
-	mapAddStr(msi, "id", resp.Data.ID)
 	mapAddStr(msi, "group_id", resp.Data.GroupID)
 	mapAddStr(msi, "service", resp.Data.Service)
 	mapAddStr(msi, "service_version", intPointerToStr(resp.Data.ServiceVersion))
