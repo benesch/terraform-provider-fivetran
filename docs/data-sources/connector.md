@@ -25,17 +25,28 @@ data "fivetran_connector" "connector" {
 - `config` - see [below for nested schema](#nestedatt--config)
 - `connected_by` 
 - `created_at` 
+- `daily_sync_time` 
 - `failed_at` 
 - `group_id` 
+- `name`
 - `pause_after_trial` 
 - `paused` 
 - `schedule_type` 
-- `schema` 
+- `destination_schema` - see [below for nested schema](#nestedatt--schema) 
 - `service` 
 - `service_version` 
 - `status` - see [below for nested schema](#nestedatt--status)
 - `succeeded_at` 
 - `sync_frequency` 
+
+<a id="nestedatt--schema"></a>
+### Nested Schema for `destination_schema`
+
+Read-Only:
+
+- `name`
+- `table`
+- `prefix`
 
 <a id="nestedatt--config"></a>
 ### Nested Schema for `config`
@@ -52,16 +63,19 @@ Read-Only:
 - `accounts` 
 - `action_breakdowns` 
 - `action_report_time` 
+- `adobe_analytics_configurations` - see [below for nested schema](#nestedblock--config--adobe_analytics_configurations)
 - `advertisables` 
 - `advertisers` 
 - `advertisers_id` 
 - `aggregation` 
+- `always_encrypted` 
 - `api_access_token` 
 - `api_key` 
 - `api_keys` 
 - `api_quota` 
 - `api_secret` 
 - `api_token` 
+- `api_type`
 - `api_url` 
 - `api_version` 
 - `app_sync_mode` 
@@ -71,7 +85,8 @@ Read-Only:
 - `auth_mode` 
 - `auth_type` 
 - `authorization_method` 
-- `aws_region_code` 
+- `aws_region_code`
+- `base_url`
 - `breakdowns` 
 - `bucket` 
 - `bucket_name` 
@@ -86,6 +101,7 @@ Read-Only:
 - `config_method` 
 - `config_type` 
 - `connection_string` 
+- `connection_type`
 - `consumer_group` 
 - `consumer_key` 
 - `consumer_secret` 
@@ -107,15 +123,19 @@ Read-Only:
 - `domain_name` 
 - `elements` 
 - `email` 
-- `enable_all_dimension_combinations` 
+- `enable_all_dimension_combinations`
+- `encryption_key`
 - `endpoint` 
-- `engagement_attribution_window` 
+- `engagement_attribution_window`
+- `entity_id` 
 - `escape_char` 
+- `eu_region` 
 - `external_id` 
 - `fields` 
 - `file_type` 
 - `finance_account_sync_mode` 
 - `finance_accounts` 
+- `folder_id`
 - `ftp_host` 
 - `ftp_password` 
 - `ftp_port` 
@@ -134,6 +154,8 @@ Read-Only:
 - `instance` 
 - `integration_key` 
 - `is_ftps` 
+- `is_multi_entity_feature_enabled`
+- `is_new_package`
 - `is_secure` 
 - `key` 
 - `last_synced_changes__utc_` 
@@ -166,6 +188,7 @@ Read-Only:
 - `project_id` 
 - `projects` 
 - `public_key` 
+- `publication_name` 
 - `query_id` 
 - `region` 
 - `replication_slot` 
@@ -184,8 +207,6 @@ Read-Only:
 - `s3role_arn` 
 - `sales_account_sync_mode` 
 - `sales_accounts` 
-- `schema` 
-- `schema_prefix` 
 - `secret` 
 - `secret_key` 
 - `secrets` 
@@ -204,7 +225,8 @@ Read-Only:
 - `sid` 
 - `site_urls` 
 - `skip_after` 
-- `skip_before` 
+- `skip_before`
+- `soap_uri`
 - `source` 
 - `sub_domain` 
 - `subdomain` 
@@ -213,11 +235,12 @@ Read-Only:
 - `sync_format` 
 - `sync_mode` 
 - `sync_type` 
-- `table` 
 - `technical_account_id` 
 - `test_table_name` 
 - `time_zone` 
 - `timeframe_months` 
+- `token_key` 
+- `token_secret`
 - `tunnel_host` 
 - `tunnel_port` 
 - `tunnel_user` 
@@ -226,13 +249,26 @@ Read-Only:
 - `update_method` 
 - `use_api_keys` 
 - `use_webhooks` 
-- `user` 
+- `user`
+- `user_id`
 - `user_key` 
 - `user_name` 
 - `user_profiles` 
 - `username` 
 - `view_attribution_window` 
 - `view_through_attribution_window_size` 
+
+<a id="nestedblock--config--adobe_analytics_configurations"></a>
+### Nested Schema for `config.adobe_analytics_configurations`
+
+Read-Only:
+
+- `sync_mode` 
+- `report_suites` 
+- `elements` 
+- `metrics` 
+- `calculated_metrics` 
+- `segments` 
 
 <a id="nestedobjatt--config--custom_tables"></a>
 ### Nested Schema for `config.custom_tables`

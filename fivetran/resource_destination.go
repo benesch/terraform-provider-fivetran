@@ -24,11 +24,11 @@ func resourceDestination() *schema.Resource {
 			"region":             {Type: schema.TypeString, Required: true},
 			"time_zone_offset":   {Type: schema.TypeString, Required: true},
 			"config":             resourceDestinationSchemaConfig(),
-			"trust_certificates": {Type: schema.TypeBool, Optional: true, ForceNew: true}, // T-112419, ForceNew can be removed and the field can be updated
-			"trust_fingerprints": {Type: schema.TypeBool, Optional: true, ForceNew: true}, // T-112419, ForceNew can be removed and the field can be updated
+			"trust_certificates": {Type: schema.TypeBool, Optional: true}, // T-112419, ForceNew can be removed and the field can be updated
+			"trust_fingerprints": {Type: schema.TypeBool, Optional: true}, // T-112419, ForceNew can be removed and the field can be updated
 			// "run_setup_tests" default value is true. It is set as required to avoid confusion, so the expected behaviour should
 			// be explicitly declared.
-			"run_setup_tests": {Type: schema.TypeBool, Required: true, ForceNew: true}, // T-112419, ForceNew can be removed and the field can be updated
+			"run_setup_tests": {Type: schema.TypeBool, Required: true},
 			"setup_status":    {Type: schema.TypeString, Computed: true},
 			// "setup_tests": ... // missing /T-112419
 			"last_updated": {Type: schema.TypeString, Computed: true}, // internal
@@ -40,15 +40,12 @@ func resourceDestinationSchemaConfig() *schema.Schema {
 	return &schema.Schema{Type: schema.TypeList, Required: true, MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"host":     {Type: schema.TypeString, Optional: true},
-				"port":     {Type: schema.TypeInt, Optional: true},
-				"database": {Type: schema.TypeString, Optional: true},
-				"auth":     {Type: schema.TypeString, Optional: true},
-				"user":     {Type: schema.TypeString, Optional: true},
-				"password": {Type: schema.TypeString, Optional: true, Sensitive: true},
-				// "connection_type", for example, is mandatory for some destinations. Configurations settings
-				// should be explicitly declared. Doing that, we avoid not declaring "connection_type"
-				// (or any other configuration) and the REST API returning it.
+				"host":                   {Type: schema.TypeString, Optional: true},
+				"port":                   {Type: schema.TypeInt, Optional: true},
+				"database":               {Type: schema.TypeString, Optional: true},
+				"auth":                   {Type: schema.TypeString, Optional: true},
+				"user":                   {Type: schema.TypeString, Optional: true},
+				"password":               {Type: schema.TypeString, Optional: true, Sensitive: true},
 				"connection_type":        {Type: schema.TypeString, Optional: true},
 				"tunnel_host":            {Type: schema.TypeString, Optional: true},
 				"tunnel_port":            {Type: schema.TypeString, Optional: true},
@@ -62,8 +59,12 @@ func resourceDestinationSchemaConfig() *schema.Schema {
 				"create_external_tables": {Type: schema.TypeString, Optional: true},
 				"external_location":      {Type: schema.TypeString, Optional: true},
 				"auth_type":              {Type: schema.TypeString, Optional: true},
-				"role_arn":               {Type: schema.TypeString, Optional: true},
-				"secret_key":             {Type: schema.TypeString, Optional: true},
+				"role_arn":               {Type: schema.TypeString, Optional: true, Sensitive: true},
+				"secret_key":             {Type: schema.TypeString, Optional: true, Sensitive: true},
+				"private_key":            {Type: schema.TypeString, Optional: true, Sensitive: true},
+				"public_key":             {Type: schema.TypeString, Computed: true},
+				"cluster_id":             {Type: schema.TypeString, Optional: true},
+				"cluster_region":         {Type: schema.TypeString, Optional: true},
 			},
 		},
 	}
@@ -107,6 +108,12 @@ func resourceDestinationRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	resp, err := svc.DestinationID(d.Id()).Do(ctx)
 	if err != nil {
+		// If the resource does not exist (404), inform Terraform. We want to immediately
+		// return here to prevent further processing.
+		if resp.Code == "404" {
+			d.SetId("")
+			return nil
+		}
 		return newDiagAppend(diags, diag.Error, "read error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}
 
@@ -202,30 +209,44 @@ func resourceDestinationReadConfig(resp *fivetran.DestinationDetailsResponse, cu
 	c["database"] = resp.Data.Config.Database
 	c["auth"] = resp.Data.Config.Auth
 	c["user"] = resp.Data.Config.User
-	// The REST API sends the password field masked. We use the state stored password here.
-	c["password"] = currentConfig[0].(map[string]interface{})["password"].(string)
-	// connection_type is returned as ConnectionMethod
-	c["connection_type"] = dataSourceDestinationConfigNormalizeConnectionType(resp.Data.Config.ConnectionMethod)
+	// The REST API sends the password field masked. We use the state stored password here if possible.
+	if len(currentConfig) > 0 {
+		c["password"] = currentConfig[0].(map[string]interface{})["password"].(string)
+		c["private_key"] = currentConfig[0].(map[string]interface{})["private_key"].(string)
+		c["secret_key"] = currentConfig[0].(map[string]interface{})["secret_key"].(string)
+		c["personal_access_token"] = currentConfig[0].(map[string]interface{})["personal_access_token"].(string)
+		c["role_arn"] = currentConfig[0].(map[string]interface{})["role_arn"].(string)
+	}
+	c["connection_type"] = dataSourceDestinationConfigNormalizeConnectionType(resp.Data.Config.ConnectionType)
 	c["tunnel_host"] = resp.Data.Config.TunnelHost
 	c["tunnel_port"] = resp.Data.Config.TunnelPort
 	c["tunnel_user"] = resp.Data.Config.TunnelUser
 	c["project_id"] = resp.Data.Config.ProjectID
-	c["data_set_location"] = resp.Data.Config.DataSetLocation
+
+	// BQ returns its data_set_location as location in response
+	if resp.Data.Config.Location != "" && resourceDestinationIsBigQuery(resp.Data.Service) {
+		c["data_set_location"] = resp.Data.Config.Location
+	} else {
+		c["data_set_location"] = resp.Data.Config.DataSetLocation
+	}
+
 	c["bucket"] = resp.Data.Config.Bucket
 	c["server_host_name"] = resp.Data.Config.ServerHostName
 	c["http_path"] = resp.Data.Config.HTTPPath
-	c["personal_access_token"] = resp.Data.Config.PersonalAccessToken
-	if resp.Data.Config.CreateExternalTables != nil {
-		c["create_external_tables"] = boolPointerToStr(resp.Data.Config.CreateExternalTables)
-	}
+	c["create_external_tables"] = resp.Data.Config.CreateExternalTables
 	c["external_location"] = resp.Data.Config.ExternalLocation
 	c["auth_type"] = resp.Data.Config.AuthType
-	c["role_arn"] = resp.Data.Config.RoleArn
-	c["secret_key"] = resp.Data.Config.SecretKey
+	c["cluster_id"] = resp.Data.Config.ClusterId
+	c["cluster_region"] = resp.Data.Config.ClusterRegion
+	c["public_key"] = resp.Data.Config.PublicKey
 
 	config = append(config, c)
 
 	return config, nil
+}
+
+func resourceDestinationIsBigQuery(service string) bool {
+	return service == "big_query" || service == "managed_big_query" || service == "big_query_dts"
 }
 
 // resourceDestinationCreateConfig receives a config type []interface{} and returns a
@@ -317,6 +338,18 @@ func resourceDestinationCreateConfig(config []interface{}) (*fivetran.Destinatio
 	}
 	if v := config[0].(map[string]interface{})["secret_key"].(string); v != "" {
 		fivetranConfig.SecretKey(v)
+		hasConfig = true
+	}
+	if v := config[0].(map[string]interface{})["private_key"].(string); v != "" {
+		fivetranConfig.PrivateKey(v)
+		hasConfig = true
+	}
+	if v := config[0].(map[string]interface{})["cluster_id"].(string); v != "" {
+		fivetranConfig.ClusterId(v)
+		hasConfig = true
+	}
+	if v := config[0].(map[string]interface{})["cluster_region"].(string); v != "" {
+		fivetranConfig.ClusterRegion(v)
 		hasConfig = true
 	}
 

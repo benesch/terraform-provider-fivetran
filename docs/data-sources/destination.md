@@ -37,6 +37,8 @@ Read-Only:
 - `auth` 
 - `auth_type` 
 - `bucket` 
+- `cluster_id`
+- `cluster_region`
 - `connection_type` 
 - `create_external_tables` 
 - `data_set_location` 
@@ -47,8 +49,11 @@ Read-Only:
 - `password` 
 - `personal_access_token` 
 - `port`
+- `private_key`
 - `project_id` 
+- `public_key`
 - `role_arn` 
+- `secret_key`
 - `server_host_name` 
 - `tunnel_host` 
 - `tunnel_port` 

@@ -15,7 +15,10 @@ resource "fivetran_connector" "amplitude" {
     sync_frequency = 60
     paused = false
     pause_after_trial = false
-    schema = "amplitude_connector"
+
+    destination_schema {
+        name = "amplitude_connector"
+    } 
 
     config {
         project_credentials {
@@ -33,6 +36,28 @@ resource "fivetran_connector" "amplitude" {
 }
 ```
 
+### NOTE: resources indirect dependencies
+
+The connector resource receives the `group_id` parameter value from the group resource, but the destination resource depends on the group resource.  When you try to destroy the destination resource infrastructure, the terraform plan is created successfully, but once you run the `terraform apply` command, it returns an error because the Fivetran API doesn't let you delete destinations that have linked connectors. To solve this problem, you should either explicitly define `depends_on` between the connector and destination:
+
+```hcl
+resource "fivetran_connector" "amplitude" {
+    ...
+    depends_on = [
+        fivetran_destination.my_destination
+    ]
+}
+```
+
+or get the group ID from the destination:
+
+```hcl
+resource "fivetran_connector" "amplitude" {
+    group_id = fivetran_destination.my_destination.group_id
+    ...
+}
+```
+
 ## Schema
 
 ### Required
@@ -41,7 +66,7 @@ resource "fivetran_connector" "amplitude" {
 - `group_id` - The unique identifier for the group within the Fivetran system.
 - `pause_after_trial` - Specifies whether the connector should be paused after the free trial period has ended.
 - `paused` - Specifies whether the connector is paused.
-- `schema` - The connector schema name has to be unique within the group.
+- `destination_schema` - The connector destination schema configuration. Defines connector schema identity in destination. (see [below for nested schema](#nestedblock--schema)) 
 - `service` - The name for the connector type within the Fivetran system.
 - `sync_frequency` - The connector sync frequency in minutes. The supported values are: `5`, `15`, `30`, `60`, `120`, `180`, `360`, `480`, `720`, `1440`.
 
@@ -52,6 +77,8 @@ resource "fivetran_connector" "amplitude" {
 - `trust_certificates` - Specifies whether we should trust the certificate automatically. Applicable only for database connectors.
 - `trust_fingerprints` - Specifies whether we should trust the SSH fingerprint automatically. Applicable only for database connectors.
 
+-> To complete connector configuration you should specify `run_setup_tests` to `true`. Default value is `false`.
+
 ### Read-Only
 
 - `connected_by` 
@@ -59,6 +86,7 @@ resource "fivetran_connector" "amplitude" {
 - `failed_at` 
 - `id` 
 - `last_updated` 
+- `name`
 - `schedule_type` 
 - `service_version` 
 - `status` - (see [below for nested schema](#nestedatt--status))
@@ -81,16 +109,19 @@ Optional:
 - `accounts` 
 - `action_breakdowns` 
 - `action_report_time` 
+- `adobe_analytics_configurations` - see [below for nested schema](#nestedblock--config--adobe_analytics_configurations)
 - `advertisables` 
 - `advertisers` 
 - `advertisers_id` 
 - `aggregation` 
+- `always_encrypted` 
 - `api_access_token` 
 - `api_key` 
 - `api_keys` 
 - `api_quota` 
 - `api_secret` 
 - `api_token` 
+- `api_type`
 - `api_url` 
 - `api_version` 
 - `app_sync_mode` 
@@ -99,7 +130,8 @@ Optional:
 - `archive_pattern` 
 - `auth_mode` 
 - `auth_type` 
-- `aws_region_code` 
+- `aws_region_code`
+- `base_url`
 - `breakdowns` 
 - `bucket` 
 - `bucket_name` 
@@ -114,6 +146,7 @@ Optional:
 - `config_method` 
 - `config_type` 
 - `connection_string` 
+- `connection_type`
 - `consumer_group` 
 - `consumer_key` 
 - `consumer_secret` 
@@ -135,15 +168,19 @@ Optional:
 - `domain_name` 
 - `elements` 
 - `email` 
-- `enable_all_dimension_combinations` 
+- `enable_all_dimension_combinations`
+- `encryption_key`
 - `endpoint` 
-- `engagement_attribution_window` 
+- `engagement_attribution_window`
+- `entity_id`  
 - `escape_char` 
+- `eu_region` 
 - `external_id` 
 - `fields` 
 - `file_type` 
 - `finance_account_sync_mode` 
 - `finance_accounts` 
+- `folder_id`
 - `ftp_host` 
 - `ftp_password` 
 - `ftp_port` 
@@ -162,6 +199,8 @@ Optional:
 - `instance` 
 - `integration_key` 
 - `is_ftps` 
+- `is_multi_entity_feature_enabled`
+- `is_new_package`
 - `is_secure` 
 - `key` 
 - `manager_accounts` 
@@ -192,6 +231,7 @@ Optional:
 - `project_id` 
 - `projects` 
 - `public_key` 
+- `publication_name` 
 - `query_id` 
 - `region` 
 - `replication_slot` 
@@ -210,8 +250,6 @@ Optional:
 - `s3role_arn` 
 - `sales_account_sync_mode` 
 - `sales_accounts` 
-- `schema` 
-- `schema_prefix` 
 - `secret` 
 - `secret_key` 
 - `secrets` 
@@ -230,6 +268,7 @@ Optional:
 - `site_urls` 
 - `skip_after` 
 - `skip_before` 
+- `soap_uri` 
 - `source` 
 - `sub_domain` 
 - `subdomain` 
@@ -238,11 +277,12 @@ Optional:
 - `sync_format` 
 - `sync_mode` 
 - `sync_type` 
-- `table` 
 - `technical_account_id` 
 - `test_table_name` 
 - `time_zone` 
 - `timeframe_months` 
+- `token_key` 
+- `token_secret`
 - `tunnel_host` 
 - `tunnel_port` 
 - `tunnel_user` 
@@ -252,6 +292,7 @@ Optional:
 - `use_api_keys` 
 - `use_webhooks` 
 - `user` 
+- `user_id` 
 - `user_key` 
 - `user_name` 
 - `user_profiles` 
@@ -265,6 +306,29 @@ Read-Only:
 - `last_synced_changes__utc_` 
 - `latest_version` 
 - `service_version` 
+
+<a id="nestedblock--schema"></a>
+### Nested Schema for `destination-schema`
+
+Optional:
+
+- `name` - required for all connectors instead of db-like connectors, represents `config.schema` field.
+- `table` - required for some non db-like connectors, represents `config.table` field.
+- `prefix` - required only for db-like connectors, represents `config.schema_prefix` field.
+
+See [Connector Config](https://fivetran.com/docs/rest-api/connectors/config) for details.
+
+<a id="nestedblock--config--adobe_analytics_configurations"></a>
+### Nested Schema for `config.adobe_analytics_configurations`
+
+Optional:
+
+- `sync_mode` 
+- `report_suites` 
+- `elements` 
+- `metrics` 
+- `calculated_metrics` 
+- `segments` 
 
 <a id="nestedblock--config--custom_tables"></a>
 ### Nested Schema for `config.custom_tables`
@@ -355,3 +419,61 @@ Read-Only:
 
 - `code` 
 - `message` 
+
+## Import
+
+1. To import an existing `fivetran_connector` resource into your Terraform state, you need to get **Fivetran Connector ID** on the **Setup** tab of the connector page in your Fivetran dashboard.
+
+2. Retrieve all connectors in a particular group using the [fivetran_group_connectors data source](/docs/data-sources/group_connectors). To retrieve existing groups, use the [fivetran_groups data source](/docs/data-sources/groups).
+
+3. Define an empty resource in your `.tf` configuration:
+
+```hcl
+resource "fivetran_connector" "my_imported_connector" {
+
+}
+```
+
+4. Run the `terraform import` command:
+
+```
+terraform import fivetran_connector.my_imported_connector <your Fivetran Connector ID>
+```
+
+5.  Use the `terraform state show` command to get the values from the state:
+
+```
+terraform state show 'fivetran_connector.my_imported_connector'
+```
+6. Copy the values and paste them to your `.tf` configuration.
+
+-> The `config` object in the state contains all properties defined in the schema. You need to remove properties from the `config` that are not related to connectors. See the [Fivetran REST API documentation](https://fivetran.com/docs/rest-api/connectors/config) for reference to find the properties you need to keep in the `config` section.
+
+### How to authorize connector
+
+## GitHub connector example
+
+To authorize a GutHub connector via terraform using personal access token you should specify `auth_mode`, `username` and `pat` inside `config` block instead of `auth` and set `run_setup_tests` to `true`:
+
+```hcl
+resource "fivetran_connector" "my_github_connector" {
+    group_id = "group_id"
+    service = "github"
+    sync_frequency = 60
+    paused = false
+    pause_after_trial = false
+    run_setup_tests = true
+
+    destination_schema {
+        name = "github_connector"
+    } 
+
+    config {
+        sync_mode = "AllRepositories"
+        use_webhooks = false
+        auth_mode = "PersonalAccessToken"
+        username = "git-hub-user-name"
+        pat = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+}
+```

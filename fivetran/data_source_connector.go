@@ -13,21 +13,35 @@ func dataSourceConnector() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceConnectorRead,
 		Schema: map[string]*schema.Schema{
-			"id":                {Type: schema.TypeString, Required: true},
-			"group_id":          {Type: schema.TypeString, Computed: true},
-			"service":           {Type: schema.TypeString, Computed: true},
-			"service_version":   {Type: schema.TypeString, Computed: true},
-			"schema":            {Type: schema.TypeString, Computed: true},
-			"connected_by":      {Type: schema.TypeString, Computed: true},
-			"created_at":        {Type: schema.TypeString, Computed: true},
-			"succeeded_at":      {Type: schema.TypeString, Computed: true},
-			"failed_at":         {Type: schema.TypeString, Computed: true},
-			"sync_frequency":    {Type: schema.TypeString, Computed: true},
-			"schedule_type":     {Type: schema.TypeString, Computed: true},
-			"paused":            {Type: schema.TypeString, Computed: true},
-			"pause_after_trial": {Type: schema.TypeString, Computed: true},
-			"status":            dataSourceConnectorSchemaStatus(),
-			"config":            dataSourceConnectorSchemaConfig(),
+			"id":                 {Type: schema.TypeString, Required: true},
+			"group_id":           {Type: schema.TypeString, Computed: true},
+			"service":            {Type: schema.TypeString, Computed: true},
+			"service_version":    {Type: schema.TypeString, Computed: true},
+			"name":               {Type: schema.TypeString, Computed: true},
+			"destination_schema": dataSourceConnectorDestinationSchemaSchema(),
+			"connected_by":       {Type: schema.TypeString, Computed: true},
+			"created_at":         {Type: schema.TypeString, Computed: true},
+			"succeeded_at":       {Type: schema.TypeString, Computed: true},
+			"failed_at":          {Type: schema.TypeString, Computed: true},
+			"sync_frequency":     {Type: schema.TypeString, Computed: true},
+			"daily_sync_time":    {Type: schema.TypeString, Computed: true},
+			"schedule_type":      {Type: schema.TypeString, Computed: true},
+			"paused":             {Type: schema.TypeString, Computed: true},
+			"pause_after_trial":  {Type: schema.TypeString, Computed: true},
+			"status":             dataSourceConnectorSchemaStatus(),
+			"config":             dataSourceConnectorSchemaConfig(),
+		},
+	}
+}
+
+func dataSourceConnectorDestinationSchemaSchema() *schema.Schema {
+	return &schema.Schema{Type: schema.TypeList, Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"name":   {Type: schema.TypeString, Computed: true},
+				"table":  {Type: schema.TypeString, Computed: true},
+				"prefix": {Type: schema.TypeString, Computed: true},
+			},
 		},
 	}
 }
@@ -65,7 +79,6 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 	return &schema.Schema{Type: schema.TypeList, Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"schema":                {Type: schema.TypeString, Computed: true},
 				"table":                 {Type: schema.TypeString, Computed: true},
 				"sheet_id":              {Type: schema.TypeString, Computed: true},
 				"named_range":           {Type: schema.TypeString, Computed: true},
@@ -85,6 +98,7 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 				"s3role_arn":            {Type: schema.TypeString, Computed: true},
 				"abs_connection_string": {Type: schema.TypeString, Computed: true},
 				"abs_container_name":    {Type: schema.TypeString, Computed: true},
+				"folder_id":             {Type: schema.TypeString, Computed: true},
 				"ftp_host":              {Type: schema.TypeString, Computed: true},
 				"ftp_port":              {Type: schema.TypeString, Computed: true},
 				"ftp_user":              {Type: schema.TypeString, Computed: true},
@@ -98,7 +112,6 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 				"advertisables":         {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
 				"report_type":           {Type: schema.TypeString, Computed: true},
 				"dimensions":            {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
-				"schema_prefix":         {Type: schema.TypeString, Computed: true},
 				"api_key":               {Type: schema.TypeString, Computed: true},
 				"external_id":           {Type: schema.TypeString, Computed: true},
 				"role_arn":              {Type: schema.TypeString, Computed: true},
@@ -125,6 +138,7 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 					},
 				},
 				"auth_mode":                         {Type: schema.TypeString, Computed: true},
+				"user_name":                         {Type: schema.TypeString, Computed: true},
 				"username":                          {Type: schema.TypeString, Computed: true},
 				"password":                          {Type: schema.TypeString, Computed: true},
 				"certificate":                       {Type: schema.TypeString, Computed: true},
@@ -151,6 +165,7 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 				"secrets":                           {Type: schema.TypeString, Computed: true},
 				"container_name":                    {Type: schema.TypeString, Computed: true},
 				"connection_string":                 {Type: schema.TypeString, Computed: true},
+				"connection_type":                   {Type: schema.TypeString, Computed: true},
 				"function_app":                      {Type: schema.TypeString, Computed: true},
 				"function_name":                     {Type: schema.TypeString, Computed: true},
 				"function_key":                      {Type: schema.TypeString, Computed: true},
@@ -266,6 +281,7 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 				"domain":                               {Type: schema.TypeString, Computed: true},
 				"update_method":                        {Type: schema.TypeString, Computed: true},
 				"replication_slot":                     {Type: schema.TypeString, Computed: true},
+				"publication_name":                     {Type: schema.TypeString, Computed: true},
 				"data_center":                          {Type: schema.TypeString, Computed: true},
 				"api_token":                            {Type: schema.TypeString, Computed: true},
 				"sub_domain":                           {Type: schema.TypeString, Computed: true},
@@ -274,7 +290,7 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 				"organizations":                        {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
 				"swipe_attribution_window":             {Type: schema.TypeString, Computed: true},
 				"api_access_token":                     {Type: schema.TypeString, Computed: true},
-				"account_ids":                          {Type: schema.TypeString, Computed: true},
+				"account_ids":                          {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
 				"sid":                                  {Type: schema.TypeString, Computed: true},
 				"secret":                               {Type: schema.TypeString, Computed: true},
 				"oauth_token":                          {Type: schema.TypeString, Computed: true},
@@ -285,7 +301,6 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 				"advertisers_id":                       {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
 				"sync_format":                          {Type: schema.TypeString, Computed: true},
 				"bucket_service":                       {Type: schema.TypeString, Computed: true},
-				"user_name":                            {Type: schema.TypeString, Computed: true},
 				"report_url":                           {Type: schema.TypeString, Computed: true},
 				"unique_id":                            {Type: schema.TypeString, Computed: true},
 				"auth_type":                            {Type: schema.TypeString, Computed: true},
@@ -293,6 +308,31 @@ func dataSourceConnectorSchemaConfig() *schema.Schema {
 				"authorization_method":                 {Type: schema.TypeString, Computed: true},
 				"service_version":                      {Type: schema.TypeString, Computed: true},
 				"last_synced_changes__utc_":            {Type: schema.TypeString, Computed: true},
+				"adobe_analytics_configurations": {Type: schema.TypeList, Computed: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"sync_mode":          {Type: schema.TypeString, Computed: true},
+							"report_suites":      {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
+							"elements":           {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
+							"metrics":            {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
+							"calculated_metrics": {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
+							"segments":           {Type: schema.TypeList, Computed: true, Elem: &schema.Schema{Type: schema.TypeString}},
+						},
+					},
+				},
+				"is_new_package":                  {Type: schema.TypeString, Computed: true},
+				"is_multi_entity_feature_enabled": {Type: schema.TypeString, Computed: true},
+				"api_type":                        {Type: schema.TypeString, Computed: true},
+				"base_url":                        {Type: schema.TypeString, Computed: true},
+				"entity_id":                       {Type: schema.TypeString, Computed: true},
+				"soap_uri":                        {Type: schema.TypeString, Computed: true},
+				"user_id":                         {Type: schema.TypeString, Computed: true},
+				"encryption_key":                  {Type: schema.TypeString, Computed: true},
+				"always_encrypted":                {Type: schema.TypeString, Computed: true},
+				"eu_region":                       {Type: schema.TypeString, Computed: true},
+				"pat":                             {Type: schema.TypeString, Computed: true},
+				"token_key":                       {Type: schema.TypeString, Computed: true},
+				"token_secret":                    {Type: schema.TypeString, Computed: true},
 			},
 		},
 	}
@@ -313,12 +353,14 @@ func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, m inte
 	mapAddStr(msi, "group_id", resp.Data.GroupID)
 	mapAddStr(msi, "service", resp.Data.Service)
 	mapAddStr(msi, "service_version", intPointerToStr(resp.Data.ServiceVersion))
-	mapAddStr(msi, "schema", resp.Data.Schema)
+	mapAddStr(msi, "name", resp.Data.Schema)
+	mapAddXInterface(msi, "destination_schema", dataSourceConnectorReadDestinationSchema(resp.Data.Schema, resp.Data.Service))
 	mapAddStr(msi, "connected_by", resp.Data.ConnectedBy)
 	mapAddStr(msi, "created_at", resp.Data.CreatedAt.String())
 	mapAddStr(msi, "succeeded_at", resp.Data.SucceededAt.String())
 	mapAddStr(msi, "failed_at", resp.Data.FailedAt.String())
 	mapAddStr(msi, "sync_frequency", intPointerToStr(resp.Data.SyncFrequency))
+	mapAddStr(msi, "daily_sync_time", resp.Data.DailySyncTime)
 	mapAddStr(msi, "schedule_type", resp.Data.ScheduleType)
 	mapAddStr(msi, "paused", boolPointerToStr(resp.Data.Paused))
 	mapAddStr(msi, "pause_after_trial", boolPointerToStr(resp.Data.PauseAfterTrial))
@@ -333,6 +375,10 @@ func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.SetId(resp.Data.ID)
 
 	return diags
+}
+
+func dataSourceConnectorReadDestinationSchema(schema string, service string) []interface{} {
+	return readDestinationSchema(schema, service)
 }
 
 // dataSourceConnectorReadStatus receives a *fivetran.ConnectorDetailsResponse and returns a []interface{}
@@ -392,8 +438,6 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	config := make([]interface{}, 1)
 
 	c := make(map[string]interface{})
-	mapAddStr(c, "schema", resp.Data.Config.Schema)
-	mapAddStr(c, "table", resp.Data.Config.Table)
 	mapAddStr(c, "sheet_id", resp.Data.Config.SheetID)
 	mapAddStr(c, "named_range", resp.Data.Config.NamedRange)
 	mapAddStr(c, "client_id", resp.Data.Config.ClientID)
@@ -412,6 +456,7 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddStr(c, "s3role_arn", resp.Data.Config.S3RoleArn)
 	mapAddStr(c, "abs_connection_string", resp.Data.Config.ABSConnectionString)
 	mapAddStr(c, "abs_container_name", resp.Data.Config.ABSContainerName)
+	mapAddStr(c, "folder_id", resp.Data.Config.FolderId)
 	mapAddStr(c, "ftp_host", resp.Data.Config.FTPHost)
 	mapAddStr(c, "ftp_port", intPointerToStr(resp.Data.Config.FTPPort))
 	mapAddStr(c, "ftp_user", resp.Data.Config.FTPUser)
@@ -425,7 +470,6 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddXInterface(c, "advertisables", xStrXInterface(resp.Data.Config.Advertisables))
 	mapAddStr(c, "report_type", resp.Data.Config.ReportType)
 	mapAddXInterface(c, "dimensions", xStrXInterface(resp.Data.Config.Dimensions))
-	mapAddStr(c, "schema_prefix", resp.Data.Config.SchemaPrefix)
 	mapAddStr(c, "api_key", resp.Data.Config.APIKey)
 	mapAddStr(c, "external_id", resp.Data.Config.ExternalID)
 	mapAddStr(c, "role_arn", resp.Data.Config.RoleArn)
@@ -440,11 +484,12 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddStr(c, "null_sequence", resp.Data.Config.NullSequence)
 	mapAddStr(c, "delimiter", resp.Data.Config.Delimiter)
 	mapAddStr(c, "escape_char", resp.Data.Config.EscapeChar)
-	mapAddStr(c, "skip_before", resp.Data.Config.SkipBefore)
-	mapAddStr(c, "skip_after", resp.Data.Config.SkipAfter)
+	mapAddStr(c, "skip_before", intPointerToStr(&resp.Data.Config.SkipBefore))
+	mapAddStr(c, "skip_after", intPointerToStr(&resp.Data.Config.SkipAfter))
 	mapAddXInterface(c, "project_credentials", dataSourceConnectorReadConfigFlattenProjectCredentials(resp))
 	mapAddStr(c, "auth_mode", resp.Data.Config.AuthMode)
-	mapAddStr(c, "username", resp.Data.Config.UserName)
+	mapAddStr(c, "user_name", resp.Data.Config.UserName)
+	mapAddStr(c, "username", resp.Data.Config.Username)
 	mapAddStr(c, "password", resp.Data.Config.Password)
 	mapAddStr(c, "certificate", resp.Data.Config.Certificate)
 	mapAddXInterface(c, "selected_exports", xStrXInterface(resp.Data.Config.SelectedExports))
@@ -470,6 +515,7 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddStr(c, "secrets", resp.Data.Config.Secrets)
 	mapAddStr(c, "container_name", resp.Data.Config.ContainerName)
 	mapAddStr(c, "connection_string", resp.Data.Config.ConnectionString)
+	mapAddStr(c, "connection_type", resp.Data.Config.ConnectionType)
 	mapAddStr(c, "function_app", resp.Data.Config.FunctionApp)
 	mapAddStr(c, "function_name", resp.Data.Config.FunctionName)
 	mapAddStr(c, "function_key", resp.Data.Config.FunctionKey)
@@ -527,7 +573,7 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddStr(c, "view_through_attribution_window_size", resp.Data.Config.ViewThroughAttributionWindowSize)
 	mapAddStr(c, "post_click_attribution_window_size", resp.Data.Config.PostClickAttributionWindowSize)
 	mapAddStr(c, "use_api_keys", resp.Data.Config.UseAPIKeys)
-	mapAddStr(c, "api_keys", resp.Data.Config.APIKeys)
+	mapAddXInterface(c, "api_keys", xStrXInterface(resp.Data.Config.APIKeys))
 	mapAddStr(c, "endpoint", resp.Data.Config.Endpoint)
 	mapAddStr(c, "identity", resp.Data.Config.Identity)
 	mapAddStr(c, "api_quota", intPointerToStr(resp.Data.Config.APIQuota))
@@ -556,6 +602,7 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddStr(c, "domain", resp.Data.Config.Domain)
 	mapAddStr(c, "update_method", resp.Data.Config.UpdateMethod)
 	mapAddStr(c, "replication_slot", resp.Data.Config.ReplicationSlot)
+	mapAddStr(c, "publication_name", resp.Data.Config.PublicationName)
 	mapAddStr(c, "data_center", resp.Data.Config.DataCenter)
 	mapAddStr(c, "api_token", resp.Data.Config.APIToken)
 	mapAddStr(c, "sub_domain", resp.Data.Config.SubDomain)
@@ -564,7 +611,7 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddXInterface(c, "organizations", xStrXInterface(resp.Data.Config.Organizations))
 	mapAddStr(c, "swipe_attribution_window", resp.Data.Config.SwipeAttributionWindow)
 	mapAddStr(c, "api_access_token", resp.Data.Config.APIAccessToken)
-	mapAddStr(c, "account_ids", resp.Data.Config.AccountIDs)
+	mapAddXInterface(c, "account_ids", xStrXInterface(resp.Data.Config.AccountIDs))
 	mapAddStr(c, "sid", resp.Data.Config.SID)
 	mapAddStr(c, "secret", resp.Data.Config.Secret)
 	mapAddStr(c, "oauth_token", resp.Data.Config.OauthToken)
@@ -575,7 +622,6 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddXInterface(c, "advertisers_id", xStrXInterface(resp.Data.Config.AdvertisersID))
 	mapAddStr(c, "sync_format", resp.Data.Config.SyncFormat)
 	mapAddStr(c, "bucket_service", resp.Data.Config.BucketService)
-	mapAddStr(c, "user_name", resp.Data.Config.UserName)
 	mapAddStr(c, "report_url", resp.Data.Config.ReportURL)
 	mapAddStr(c, "unique_id", resp.Data.Config.UniqueID)
 	mapAddStr(c, "auth_type", resp.Data.Config.AuthType)
@@ -583,6 +629,20 @@ func dataSourceConnectorReadConfig(resp *fivetran.ConnectorDetailsResponse) []in
 	mapAddStr(c, "authorization_method", resp.Data.Config.AuthorizationMethod)
 	mapAddStr(c, "service_version", resp.Data.Config.ServiceVersion)
 	mapAddStr(c, "last_synced_changes__utc_", resp.Data.Config.LastSyncedChangesUtc)
+	mapAddStr(c, "is_new_package", boolPointerToStr(resp.Data.Config.IsNewPackage))
+	mapAddXInterface(c, "adobe_analytics_configurations", dataSourceConnectorReadConfigFlattenAdobeAnalyticsConfigurations(resp))
+	mapAddStr(c, "is_multi_entity_feature_enabled", boolPointerToStr(resp.Data.Config.IsMultiEntityFeatureEnabled))
+	mapAddStr(c, "api_type", resp.Data.Config.ApiType)
+	mapAddStr(c, "base_url", resp.Data.Config.BaseUrl)
+	mapAddStr(c, "entity_id", resp.Data.Config.EntityId)
+	mapAddStr(c, "soap_uri", resp.Data.Config.SoapUri)
+	mapAddStr(c, "user_id", resp.Data.Config.UserId)
+	mapAddStr(c, "encryption_key", resp.Data.Config.EncryptionKey)
+	mapAddStr(c, "always_encrypted", boolPointerToStr(resp.Data.Config.AlwaysEncrypted))
+	mapAddStr(c, "eu_region", boolPointerToStr(resp.Data.Config.EuRegion))
+	mapAddStr(c, "pat", resp.Data.Config.PAT)
+	mapAddStr(c, "token_key", resp.Data.Config.TokenKey)
+	mapAddStr(c, "token_secret", resp.Data.Config.TokenSecret)
 	config[0] = c
 
 	return config
@@ -650,4 +710,24 @@ func dataSourceConnectorReadConfigFlattenCustomTables(resp *fivetran.ConnectorDe
 	}
 
 	return customTables
+}
+
+func dataSourceConnectorReadConfigFlattenAdobeAnalyticsConfigurations(resp *fivetran.ConnectorDetailsResponse) []interface{} {
+	if len(resp.Data.Config.AdobeAnalyticsConfigurations) < 1 {
+		return make([]interface{}, 0)
+	}
+
+	adobeAnalyticsConfigurations := make([]interface{}, len(resp.Data.Config.AdobeAnalyticsConfigurations))
+	for i, v := range resp.Data.Config.AdobeAnalyticsConfigurations {
+		aac := make(map[string]interface{})
+		mapAddStr(aac, "sync_mode", v.SyncMode)
+		mapAddXInterface(aac, "report_suites", xStrXInterface(v.ReportSuites))
+		mapAddXInterface(aac, "elements", xStrXInterface(v.Elements))
+		mapAddXInterface(aac, "metrics", xStrXInterface(v.Metrics))
+		mapAddXInterface(aac, "calculated_metrics", xStrXInterface(v.CalculatedMetrics))
+		mapAddXInterface(aac, "segments", xStrXInterface(v.Segments))
+		adobeAnalyticsConfigurations[i] = aac
+	}
+
+	return adobeAnalyticsConfigurations
 }

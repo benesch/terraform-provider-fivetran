@@ -23,14 +23,16 @@ func resourceUser() *schema.Resource {
 			"email":       {Type: schema.TypeString, Required: true, ForceNew: true},
 			"given_name":  {Type: schema.TypeString, Required: true},
 			"family_name": {Type: schema.TypeString, Required: true},
-			"verified":    {Type: schema.TypeBool, Computed: true},
-			"invited":     {Type: schema.TypeBool, Computed: true},
-			"picture":     {Type: schema.TypeString, Optional: true},
-			"phone":       {Type: schema.TypeString, Optional: true},
-			// "role":         {Type: schema.TypeString, Required: true}, // commented until T-109040 is fixed.
+
+			"role":    {Type: schema.TypeString, Optional: true},
+			"picture": {Type: schema.TypeString, Optional: true},
+			"phone":   {Type: schema.TypeString, Optional: true},
+
 			"logged_in_at": {Type: schema.TypeString, Computed: true},
 			"created_at":   {Type: schema.TypeString, Computed: true},
 			"last_updated": {Type: schema.TypeString, Computed: true}, // internal
+			"verified":     {Type: schema.TypeBool, Computed: true},
+			"invited":      {Type: schema.TypeBool, Computed: true},
 		},
 	}
 }
@@ -43,15 +45,17 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	svc.Email(d.Get("email").(string))
 	svc.GivenName(d.Get("given_name").(string))
 	svc.FamilyName(d.Get("family_name").(string))
-	if v, ok := d.GetOk("picture"); ok {
+
+	if v, ok := d.GetOk("role"); ok && v != "" {
+		svc.Role(v.(string))
+	}
+
+	if v, ok := d.GetOk("picture"); ok && v != "" {
 		svc.Picture(v.(string))
 	}
-	if v, ok := d.GetOk("phone"); ok {
+	if v, ok := d.GetOk("phone"); ok && v != "" {
 		svc.Phone(v.(string))
 	}
-	// The REST API doesn't returns `role` when creating/inviting a new user. Because of that, `role`
-	// is being enforced. This should change when T-109040 is fixed.
-	svc.Role("ReadOnly")
 
 	resp, err := svc.Do(ctx)
 	if err != nil {
@@ -73,6 +77,12 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	resp, err := svc.Do(ctx)
 	if err != nil {
+		// If the resource does not exist (404), inform Terraform. We want to immediately
+		// return here to prevent further processing.
+		if resp.Code == "404" {
+			d.SetId("")
+			return nil
+		}
 		return newDiagAppend(diags, diag.Error, "read error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}
 
@@ -87,6 +97,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	msi["phone"] = resp.Data.Phone
 	msi["logged_in_at"] = resp.Data.LoggedInAt.String()
 	msi["created_at"] = resp.Data.CreatedAt.String()
+	msi["role"] = resp.Data.Role
 	for k, v := range msi {
 		if err := d.Set(k, v); err != nil {
 			return newDiagAppend(diags, diag.Error, "set error", fmt.Sprint(err))
@@ -101,6 +112,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	client := m.(*fivetran.Client)
+
 	svc := client.NewUserModify()
 
 	svc.UserID(d.Id())
@@ -116,6 +128,9 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 	if d.HasChange("phone") {
 		svc.Phone(d.Get("phone").(string))
+	}
+	if d.HasChange("role") {
+		svc.Role(d.Get("role").(string))
 	}
 
 	resp, err := svc.Do(ctx)

@@ -8,7 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var limit = 1000 // REST API response objects limit per HTTP request
+var limit = 1000        // REST API response objects limit per HTTP request
+const version = "0.6.1" // Current provider version
 
 func Provider() *schema.Provider {
 	return &schema.Provider{
@@ -17,10 +18,12 @@ func Provider() *schema.Provider {
 			"api_secret": {Type: schema.TypeString, Required: true, Sensitive: true, DefaultFunc: schema.EnvDefaultFunc("FIVETRAN_APISECRET", nil)},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"fivetran_user":        resourceUser(),
-			"fivetran_group":       resourceGroup(),
-			"fivetran_destination": resourceDestination(),
-			"fivetran_connector":   resourceConnector(),
+			"fivetran_user":                    resourceUser(),
+			"fivetran_group":                   resourceGroup(),
+			"fivetran_group_users":             resourceGroupUsers(),
+			"fivetran_destination":             resourceDestination(),
+			"fivetran_connector":               resourceConnector(),
+			"fivetran_connector_schema_config": resourceSchemaConfig(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"fivetran_user":                dataSourceUser(),
@@ -38,5 +41,7 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	return fivetran.New(d.Get("api_key").(string), d.Get("api_secret").(string)), diag.Diagnostics{}
+	fivetranClient := fivetran.New(d.Get("api_key").(string), d.Get("api_secret").(string))
+	fivetranClient.CustomUserAgent("terraform-provider-fivetran/" + version)
+	return fivetranClient, diag.Diagnostics{}
 }

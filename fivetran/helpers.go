@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
@@ -128,4 +129,89 @@ func newDiagAppend(diags diag.Diagnostics, severity diag.Severity, summary, deta
 // and its name should change to logDebug
 func debug(v interface{}) {
 	log.Println(fmt.Sprintf("[DEBUG] FIVETRAN: %s", v))
+}
+
+func copyMap(source map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	for k, v := range source {
+		result[k] = v
+	}
+	return result
+}
+
+func copyMapDeep(source map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	for k, v := range source {
+		if vmap, ok := v.(map[string]interface{}); ok {
+			result[k] = copyMapDeep(vmap)
+		} else {
+			result[k] = v
+		}
+	}
+	return result
+}
+
+func filterMap(
+	source map[string]interface{},
+	filter func(interface{}) bool,
+	accept func(interface{}) interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	for k, v := range source {
+		if filter(v) {
+			if accept != nil {
+				result[k] = accept(v)
+			} else {
+				result[k] = v
+			}
+		}
+	}
+	return result
+}
+
+func readDestinationSchema(schema string, service string) []interface{} {
+	destination_schema := make([]interface{}, 1)
+
+	prefix_required_services := make(map[string]bool)
+	prefix_required_services["airtable"] = true
+	prefix_required_services["dynamics_365_fo"] = true
+	prefix_required_services["mongo"] = true
+	prefix_required_services["mongo_sharded"] = true
+	prefix_required_services["aurora"] = true
+	prefix_required_services["mysql_azure"] = true
+	prefix_required_services["maria_azure"] = true
+	prefix_required_services["maria"] = true
+	prefix_required_services["mysql"] = true
+	prefix_required_services["google_cloud_mysql"] = true
+	prefix_required_services["magento_mysql"] = true
+	prefix_required_services["magento_mysql_rds"] = true
+	prefix_required_services["maria_rds"] = true
+	prefix_required_services["mysql_rds"] = true
+	prefix_required_services["oracle"] = true
+	prefix_required_services["oracle_rac"] = true
+	prefix_required_services["oracle_rds"] = true
+	prefix_required_services["oracle_ebs"] = true
+	prefix_required_services["aurora_postgres"] = true
+	prefix_required_services["azure_postgres"] = true
+	prefix_required_services["postgres"] = true
+	prefix_required_services["google_cloud_postgresql"] = true
+	prefix_required_services["heroku_postgres"] = true
+	prefix_required_services["postgres_rds"] = true
+	prefix_required_services["azure_sql_db"] = true
+	prefix_required_services["sql_server"] = true
+	prefix_required_services["sql_server_rds"] = true
+
+	ds := make(map[string]interface{})
+
+	if prefix_required_services[service] {
+		mapAddStr(ds, "prefix", schema)
+	} else {
+		s := strings.Split(schema, ".")
+		mapAddStr(ds, "name", s[0])
+		if len(s) > 1 {
+			mapAddStr(ds, "table", s[1])
+		}
+	}
+
+	destination_schema[0] = ds
+	return destination_schema
 }
