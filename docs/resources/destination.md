@@ -36,12 +36,12 @@ resource "fivetran_destination" "dest" {
 - `config` - Destination setup configuration. The format is specific for each destination. (see [below for nested schema](#nestedblock--config))
 - `group_id` - The unique identifier for the group within the Fivetran system.
 - `region` - Data processing location. This is where Fivetran will operate and run computation on data. See [Create destination](https://fivetran.com/docs/rest-api/destinations#payloadparameters) for details. Region also defines cloud service provider for your destination (GCP, AWS ar AZURE). 
-- `run_setup_tests` - Specifies whether setup tests should be run automatically.
 - `service` - The name for the destination type within the Fivetran system.
 - `time_zone_offset` - Determines the time zone for the Fivetran sync schedule.
 
 ### Optional
 
+- `run_setup_tests` - Specifies whether setup tests should be run automatically.
 - `trust_certificates` - Specifies whether we should trust the certificate automatically.
 - `trust_fingerprints` - Specifies whether we should trust the SSH fingerprint automatically.
 
@@ -56,36 +56,44 @@ resource "fivetran_destination" "dest" {
 
 See [Destination Config](https://fivetran.com/docs/rest-api/destinations/config) for details.
 
-### Optional
+- `auth` (String)
+- `auth_type` (String)
+- `bucket` (String)
+- `catalog` (String)
+- `cluster_id` (String)
+- `cluster_region` (String)
+- `connection_type` (String)
+- `create_external_tables` (String)
+- `data_set_location` (String)
+- `database` (String)
+- `external_location` (String)
+- `host` (String)
+- `http_path` (String)
+- `is_private_key_encrypted` (String)
+- `passphrase` (String, Sensitive)
+- `password` (String, Sensitive)
+- `personal_access_token` (String, Sensitive)
+- `port` (Number)
+- `private_key` (String, Sensitive)
+- `project_id` (String)
+- `role` (String)
+- `role_arn` (String, Sensitive)
+- `secret_key` (String, Sensitive)
+- `server_host_name` (String)
+- `tunnel_host` (String)
+- `tunnel_port` (String)
+- `tunnel_user` (String)
+- `user` (String)
 
-- `auth`
-- `auth_type` 
-- `bucket` 
-- `cluster_id`
-- `cluster_region`
-- `connection_type` 
-- `create_external_tables` 
-- `data_set_location` 
-- `database`
-- `external_location` 
-- `host` 
-- `http_path` 
-- `password` 
-- `personal_access_token` 
-- `port`
-- `private_key`
-- `project_id`
-- `role_arn` 
-- `secret_key`
-- `server_host_name` 
-- `tunnel_host` 
-- `tunnel_port` 
-- `tunnel_user` 
-- `user` 
+Read-Only:
 
-### ReadOnly
+- `public_key` (String)
 
-- `public_key`
+## Setup tests
+
+Field `run_setup_tests` doesn't have upstream value, it only defines local resource behavoir. This means that when you update only `run_setup_tests` value (from `false` to `true` for example) it won't cause any upstream actions. The value will be just saved in terraform state and then used on effective field updates.
+
+The default value is `false` - this means that no setup tests will be performed during create/update. To perform setup tests you should set value to `true`.
 
 ## Import
 
@@ -102,7 +110,7 @@ resource "fivetran_destination" "my_imported_destination" {
 3. Run the `terraform import` command with the following parameters:
 
 ```
-terraform import fivetran_destination.my_imported_destination <your Destination Group ID>
+terraform import fivetran_destination.my_imported_destination {your Destination Group ID}
 ```
 
 4. Use the `terraform state show` command to get the values from the state:

@@ -22,7 +22,6 @@ func dataSourceConnectorsMetadataSchemaSources() *schema.Schema {
 	return &schema.Schema{Type: schema.TypeSet, Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"id":           {Type: schema.TypeString, Computed: true},
 				"name":         {Type: schema.TypeString, Computed: true},
 				"type":         {Type: schema.TypeString, Computed: true},
 				"description":  {Type: schema.TypeString, Computed: true},
@@ -63,7 +62,6 @@ func dataSourceConnectorsMetadataFlattenMetadata(resp *fivetran.ConnectorsSource
 	sources := make([]interface{}, len(resp.Data.Items), len(resp.Data.Items))
 	for i, v := range resp.Data.Items {
 		source := make(map[string]interface{})
-		source["id"] = v.ID
 		source["name"] = v.Name
 		source["type"] = v.Type
 		source["description"] = v.Description
@@ -96,9 +94,7 @@ func dataSourceConnectorsMetadataGetMetadata(client *fivetran.Client, ctx contex
 			return fivetran.ConnectorsSourceMetadataResponse{}, err
 		}
 
-		for _, item := range respInner.Data.Items {
-			resp.Data.Items = append(resp.Data.Items, item)
-		}
+		resp.Data.Items = append(resp.Data.Items, respInner.Data.Items...)
 
 		if respInner.Data.NextCursor == "" {
 			break

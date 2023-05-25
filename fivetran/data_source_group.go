@@ -25,7 +25,7 @@ func dataSourceGroupRead(ctx context.Context, d *schema.ResourceData, m interfac
 	client := m.(*fivetran.Client)
 	svc := client.NewGroupDetails()
 
-	resp, err := svc.GroupID(d.Get("id").(string)).Do(ctx)
+	resp, err := svc.GroupID(d.Id()).Do(ctx)
 	if err != nil {
 		return newDiagAppend(diags, diag.Error, "service error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}

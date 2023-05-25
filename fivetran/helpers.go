@@ -1,13 +1,62 @@
 package fivetran
 
 import (
-	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
+
+func filterList(list []interface{}, filter func(elem interface{}) bool) *interface{} {
+	for _, v := range list {
+		if filter(v) {
+			return &v
+		}
+	}
+	return nil
+}
+
+func tryReadValue(source map[string]interface{}, key string) interface{} {
+	if v, ok := source[key]; ok {
+		return v
+	}
+	return nil
+}
+
+func tryReadListValue(source map[string]interface{}, key string) []interface{} {
+	if v, ok := source[key]; ok {
+		return v.([]interface{})
+	}
+	return nil
+}
+
+// tryCopyStringValue copies string value from map `source` to map `target` if `key` represented in `source` map
+func tryCopyStringValue(target, source map[string]interface{}, key string) {
+	if v, ok := source[key].(string); ok {
+		mapAddStr(target, key, v)
+	}
+}
+
+// tryReadBooleanValue copies bool value from map `source` to map `target` if `key` represented in `source` map
+func tryCopyBooleanValue(target, source map[string]interface{}, key string) {
+	if v, ok := source[key].(bool); ok {
+		mapAddStr(target, key, boolToStr(v))
+	}
+}
+
+// tryReadIntegerValue copies int value from map `source` to map `target` if `key` represented in `source` map
+func tryCopyIntegerValue(target, source map[string]interface{}, key string) {
+	if v, ok := source[key].(float64); ok {
+		mapAddStr(target, key, strconv.Itoa((int(v))))
+	}
+}
+
+// tryReadList copies abstract list ()`[]interface{}`) from map `source` to map `target` if `key` represented in `source` map
+func tryCopyList(target, source map[string]interface{}, key string) {
+	if v, ok := source[key].([]interface{}); ok {
+		mapAddXInterface(target, key, v)
+	}
+}
 
 // strToBool receives a string and returns a boolean
 func strToBool(s string) bool {
@@ -19,7 +68,7 @@ func strToBool(s string) bool {
 
 // boolToStr receives a boolean and returns a string
 func boolToStr(b bool) string {
-	if b == true {
+	if b {
 		return "true"
 	}
 	return "false"
@@ -45,11 +94,7 @@ func strToInt(s string) int {
 }
 
 // intToStr receives an int and returns a string.
-// This is currently not in use.
 func intToStr(i int) string {
-	if i == 0 {
-		return ""
-	}
 	return strconv.Itoa(i)
 }
 
@@ -63,13 +108,13 @@ func intPointerToStr(i *int) string {
 }
 
 // xStrXInterface receives a []string and returns a []interface{}
-func xStrXInterface(xs []string) []interface{} {
-	xi := make([]interface{}, len(xs))
-	for i, v := range xs {
-		xi[i] = v
-	}
-	return xi
-}
+// func xStrXInterface(xs []string) []interface{} {
+// 	xi := make([]interface{}, len(xs))
+// 	for i, v := range xs {
+// 		xi[i] = v
+// 	}
+// 	return xi
+// }
 
 // xInterfaceStrXStr receives a []interface{} of type string and returns a []string
 func xInterfaceStrXStr(xi []interface{}) []string {
@@ -83,21 +128,6 @@ func xInterfaceStrXStr(xi []interface{}) []string {
 // mapAddStr adds a non-empty string to a map[string]interface{}
 func mapAddStr(msi map[string]interface{}, k, v string) {
 	if v != "" {
-		msi[k] = v
-	}
-}
-
-// mapAddInt adds a non-zero int to a map[string]interface{}
-func mapAddInt(msi map[string]interface{}, k string, v int) {
-	if v != 0 {
-		msi[k] = v
-	}
-}
-
-// mapAddIntPointer adds a non-nil *int to a map[string]interface{}.
-// This is currently not in use.
-func mapAddIntP(msi map[string]interface{}, k string, v *int) {
-	if v != nil {
 		msi[k] = v
 	}
 }
@@ -123,12 +153,6 @@ func newDiag(severity diag.Severity, summary, detail string) diag.Diagnostic {
 func newDiagAppend(diags diag.Diagnostics, severity diag.Severity, summary, detail string) diag.Diagnostics {
 	diags = append(diags, newDiag(severity, summary, detail))
 	return diags
-}
-
-// debug is a temporary function. It should be improved to accept a variadic parameter
-// and its name should change to logDebug
-func debug(v interface{}) {
-	log.Println(fmt.Sprintf("[DEBUG] FIVETRAN: %s", v))
 }
 
 func copyMap(source map[string]interface{}) map[string]interface{} {

@@ -33,7 +33,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	client := m.(*fivetran.Client)
 	svc := client.NewUserDetails()
 
-	resp, err := svc.UserID(d.Get("id").(string)).Do(ctx)
+	resp, err := svc.UserID(d.Id()).Do(ctx)
 	if err != nil {
 		return newDiagAppend(diags, diag.Error, "service error", fmt.Sprintf("%v; code: %v; message: %v", err, resp.Code, resp.Message))
 	}

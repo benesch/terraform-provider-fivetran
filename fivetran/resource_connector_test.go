@@ -2,7 +2,8 @@ package fivetran_test
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -24,52 +25,45 @@ func TestResourceConnectorE2E(t *testing.T) {
 
 			    resource "fivetran_connector" "test_connector" {
 					provider = fivetran-provider
-					lifecycle {` +
-					//Ignoring `auth_type` cause it returned by default but is abcent in config
-					`		
-						ignore_changes = ["config[0].auth_type"]
-					}
 					group_id = fivetran_group.test_group.id
-					service = "google_sheets"
+					service = "fivetran_log"
 					destination_schema {
-						name = "google_sheets_schema"
-						table = "table"
+						name = "fivetran_log_schema"
 					}
-					sync_frequency = 5
-					paused = true
-					pause_after_trial = true
+					
 					trust_certificates = false
 					trust_fingerprints = false
 					run_setup_tests = false
 			
 					config {
-						sheet_id = "1Rmq_FN2kTNwWiT4adZKBxHBRmvfeBTIfKWi5B8ii9qk"
-						named_range = "range"
+						group_name = fivetran_group.test_group.name
 					}
+				}
+
+				resource "fivetran_connector_schedule" "test_connector_schedule" {
+					provider = fivetran-provider
+
+					connector_id = fivetran_connector.test_connector.id
+					sync_frequency = 5
+					paused = true
+					pause_after_trial = true
 				}
 		  `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testFivetranConnectorResourceCreate(t, "fivetran_connector.test_connector"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "service", "google_sheets"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "service_version", "1"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "schedule_type", "auto"),
+					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "service", "fivetran_log"),
+					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "name", "fivetran_log_schema"),
 
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "status.0.is_historical_sync", "true"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "status.0.update_state", "on_schedule"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "status.0.setup_state", "incomplete"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "status.0.sync_state", "paused"),
-
-					//schema_table format mutate schema to `schema` +`.` + `config.table`
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "name", "google_sheets_schema.table"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "sync_frequency", "5"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "paused", "true"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "pause_after_trial", "true"),
 					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "trust_certificates", "false"),
 					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "trust_fingerprints", "false"),
 					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "run_setup_tests", "false"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "config.0.auth_type", "OAuth"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "config.0.sheet_id", "1Rmq_FN2kTNwWiT4adZKBxHBRmvfeBTIfKWi5B8ii9qk"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "config.0.named_range", "range"),
+
+					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "config.0.is_account_level_connector", "false"),
+
+					resource.TestCheckResourceAttr("fivetran_connector_schedule.test_connector_schedule", "schedule_type", "auto"),
+					resource.TestCheckResourceAttr("fivetran_connector_schedule.test_connector_schedule", "sync_frequency", "5"),
+					resource.TestCheckResourceAttr("fivetran_connector_schedule.test_connector_schedule", "paused", "true"),
+					resource.TestCheckResourceAttr("fivetran_connector_schedule.test_connector_schedule", "pause_after_trial", "true"),
 				),
 			},
 			{
@@ -81,54 +75,44 @@ func TestResourceConnectorE2E(t *testing.T) {
 
 			    resource "fivetran_connector" "test_connector" {
 					provider = fivetran-provider
-					lifecycle {` +
-					//Ignoring `auth_type` cause it returned by default but is abcent in config
-					`
-						ignore_changes = ["config[0].auth_type"]
-					}
 					group_id = fivetran_group.test_group.id
-					service = "google_sheets"
-
+					service = "fivetran_log"
 					destination_schema {
-						name = "google_sheets_schema"
-						table = "table"
+						name = "fivetran_log_schema"
 					}
+
+					trust_certificates = true
+					trust_fingerprints = true
+					run_setup_tests = true
+			
+					config {
+						group_name = fivetran_group.test_group.name
+					}
+				}
+
+				resource "fivetran_connector_schedule" "test_connector_schedule" {
+					provider = fivetran-provider
 					
+					connector_id = fivetran_connector.test_connector.id
 					sync_frequency = 15
 					paused = false
 					pause_after_trial = false
-					trust_certificates = true
-					trust_fingerprints = true
-					run_setup_tests = false
-			
-					config {
-						sheet_id = "1Rmq_RmvfeBTIfKWi5B8ii9qkFN2kTNwWiT4adZKBxHB"
-						named_range = "range_updated"
-					}
 				}
 		  `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testFivetranConnectorResourceUpdate(t, "fivetran_connector.test_connector"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "service", "google_sheets"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "service_version", "1"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "schedule_type", "auto"),
 
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "status.0.is_historical_sync", "true"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "status.0.update_state", "on_schedule"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "status.0.setup_state", "incomplete"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "status.0.sync_state", "scheduled"),
+					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "service", "fivetran_log"),
+					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "name", "fivetran_log_schema"),
 
-					//schema_table format mutate schema to `schema` +`.` + `config.table`
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "name", "google_sheets_schema.table"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "sync_frequency", "15"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "paused", "false"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "pause_after_trial", "false"),
 					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "trust_certificates", "true"),
 					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "trust_fingerprints", "true"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "run_setup_tests", "false"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "config.0.auth_type", "OAuth"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "config.0.sheet_id", "1Rmq_RmvfeBTIfKWi5B8ii9qkFN2kTNwWiT4adZKBxHB"),
-					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "config.0.named_range", "range_updated"),
+					resource.TestCheckResourceAttr("fivetran_connector.test_connector", "run_setup_tests", "true"),
+
+					resource.TestCheckResourceAttr("fivetran_connector_schedule.test_connector_schedule", "schedule_type", "auto"),
+					resource.TestCheckResourceAttr("fivetran_connector_schedule.test_connector_schedule", "sync_frequency", "15"),
+					resource.TestCheckResourceAttr("fivetran_connector_schedule.test_connector_schedule", "paused", "false"),
+					resource.TestCheckResourceAttr("fivetran_connector_schedule.test_connector_schedule", "pause_after_trial", "false"),
 				),
 			},
 		},
@@ -173,9 +157,17 @@ func testFivetranConnectorResourceDestroy(s *terraform.State) error {
 		if err.Error() != "status code: 404; expected: 200" {
 			return err
 		}
-		if response.Code != "NotFound_Connector" {
-			return errors.New("Connector " + rs.Primary.ID + " still exists.")
+
+		if !strings.HasPrefix(response.Code, "NotFound_") {
+			return fmt.Errorf(`
+			There was no error occured on recieving connector after deletion!
+
+			Expected response.Code: 'NotFound_Connector'. 
+			Actual response.Code was: '%s'. 
+			response.Message: '%s'
+			Connector %s still exists.`, response.Code, response.Message, rs.Primary.ID)
 		}
+
 	}
 
 	return nil

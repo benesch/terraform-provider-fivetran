@@ -71,7 +71,7 @@ func dataSourceGroupConnectorsRead(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 	client := m.(*fivetran.Client)
 
-	id := d.Get("id").(string)
+	id := d.Id()
 	schema := d.Get("schema").(string)
 
 	resp, err := dataSourceGroupConnectorsGetConnectors(client, id, schema, ctx)

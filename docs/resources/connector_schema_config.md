@@ -195,8 +195,8 @@ resource "fivetran_connector_schema_config" "schema" {
 ### Optional
 
 - `enabled` - specifies if the table is enabled (default: "true")
+- `sync_mode` - table sync mode. Not all connectors support table sync_mode switching, check [documentation](https://fivetran.com/docs/getting-started/feature/history-mode#supportedconnectors) before using this field. Allowed values: `SOFT_DELETE`, `HISTORY`, `LIVE`. Check [Fivetran Rest API public docs](https://fivetran.com/docs/rest-api/connectors#payloadparameters_5) for more information.
 - `column` - the set of column settings (see [the next section for details on nested schema for columns](#nestedblock--column))
-
 
 <a id="nestedblock--column"></a>
 ## Nested Schema for `column`
@@ -209,3 +209,30 @@ resource "fivetran_connector_schema_config" "schema" {
 
 - `enabled` - specifies if the column is enabled (default: "true")
 - `hashed` - specifies if the column is hashed (default: "false")
+
+## Import
+
+1. To import an existing `fivetran_connector_schema_config` resource into your Terraform state, you need to get **Fivetran Connector ID** on the **Setup** tab of the connector page in your Fivetran dashboard.
+
+2. Retrieve all connectors in a particular group using the [fivetran_group_connectors data source](/docs/data-sources/group_connectors). To retrieve existing groups, use the [fivetran_groups data source](/docs/data-sources/groups).
+
+3. Define an empty resource in your `.tf` configuration:
+
+```hcl
+resource "fivetran_connector_schema_config" "my_imported_connector_schema_config" {
+
+}
+```
+
+4. Run the `terraform import` command:
+
+```
+terraform import fivetran_connector_schema_config.my_imported_connector_schema_config {your Fivetran Connector ID}
+```
+
+5.  Use the `terraform state show` command to get the values from the state:
+
+```
+terraform state show 'fivetran_connector_schema_config.my_imported_connector_schema_config'
+```
+6. Copy the values and paste them to your `.tf` configuration.

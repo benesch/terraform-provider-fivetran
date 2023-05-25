@@ -5,7 +5,172 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.0...HEAD)
+## [Unreleased](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.7.0...HEAD)
+
+## [0.7.0](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.19...v0.7.0)
+
+## Added
+- New `fivetran_connector_schedule` resource introduced
+
+## Breaking changes
+- Resource `fivetran_connector` updated
+    - Field `fivetran_connector.sync_frequency` moved to `fivetran_connector_schedule` resource
+    - Field `fivetran_connector.paused` moved to `fivetran_connector_schedule` resource
+    - Field `fivetran_connector.pause_after_trial` moved to `fivetran_connector_schedule` resource
+    - Field `fivetran_connector.daily_sync_time` moved to `fivetran_connector_schedule` resource
+    - Field `fivetran_connector.schedule_type` moved to `fivetran_connector_schedule` resource
+    - Readonly field `fivetran_connector.status` removed
+    - Readonly field `fivetran_connector.succeeded_at` removed
+    - Readonly field `fivetran_connector.failed_at` removed
+    - Readonly field `fivetran_connector.service_version` removed
+
+## [0.6.19](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.18...v0.6.19)
+
+## Added
+- `fivetran_connector.config.primary_keys` field support
+
+## [0.6.18](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.17...v0.6.18)
+
+## Added
+- `fivetran_connector.config.support_nested_columns` field support
+- `fivetran_connector.config.csv_definition` field support
+- `fivetran_connector.config.export_storage_type` field support
+
+## [0.6.17](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.16...v0.6.17)
+
+## Added
+- `fivetran_connector.config.company_id` field support
+- `fivetran_connector.config.login_password` field support
+- `fivetran_connector.config.environment` field support
+- `fivetran_connector.config.properties` field support
+- `fivetran_connector.config.is_public` bool field support
+- `fivetran_connector.config.empty_header` bool field support
+- `fivetran_connector.config.list_strategy` string field support
+
+## [0.6.16](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.15...v0.6.16)
+
+## Added
+- `fivetran_connector.config.group_name` field support
+
+## Fixed
+- Issue with `fivetran_connector.config.packed_mode_tables` order
+- All collections transformed into sets to avoid drifting changes caused by elements order.
+- E2E tests updated 
+
+## [0.6.15](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.14...v0.6.15)
+
+## Added
+- `fivetran_connector.config.is_single_table_mode` field support
+
+## [0.6.14](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.13...v0.6.14)
+
+## Added
+- `fivetran_connector.config.domain_host_name` field support
+- `fivetran_connector.config.access_key` field support
+- `fivetran_connector.config.client_name` field support
+- `fivetran_connector.config.domain_type` field support
+- `fivetran_connector.config.connection_method` field support
+
+## [0.6.13](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.12...v0.6.13)
+
+## Added
+- `fivetran_connector.config.packed_mode_tables` field support
+- `fivetran_connector.config.organization` field support
+
+## [0.6.12](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.11...v0.6.12)
+
+## Added support for HVA connectors
+- `fivetran_connector.config.pdb_name` missing field added
+- `fivetran_connector.config.agent_host` missing field added
+- `fivetran_connector.config.agent_port` missing field added
+- `fivetran_connector.config.agent_user` missing field added
+- `fivetran_connector.config.agent_password` missing field added
+- `fivetran_connector.config.agent_public_cert` missing field added
+- `fivetran_connector.config.agent_ora_home` missing field added
+- `fivetran_connector.config.tns` missing field added
+- `fivetran_connector.config.use_oracle_rac` missing field added
+- `fivetran_connector.config.asm_option` missing field added
+- `fivetran_connector.config.asm_user` missing field added
+- `fivetran_connector.config.asm_password` missing field added
+- `fivetran_connector.config.asm_oracle_home` missing field added
+- `fivetran_connector.config.asm_tns` missing field added
+- `fivetran_connector.config.sap_user` missing field added
+
+## Fixed
+- Issue with `fivetran_user.picture`: unable to set value to `null`
+- Issue with `fivetran_user.phone`: unable to set value to `null`
+
+## [0.6.11](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.10...v0.6.11)
+
+## Added
+- `fivetran_connector.config.sync_method` missing field added
+- `fivetran_connector.config.is_account_level_connector` missing field added
+
+## [0.6.10](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.9...v0.6.10)
+
+## Fixed
+- Issue: `fivetran_connector.config.pattern` was always set even if it doesn't have value
+
+## Added
+- `fivetran_connector.config.is_keypair` missing field added
+- `fivetran_connector.config.share_url` missing field added
+- `fivetran_connector.config.secrets_list` missing field added
+
+## [0.6.9](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.8...v0.6.9)
+
+## Fixed
+- Issue: `fivetran_connector_schema_config` when updating an existing resource
+- Issue: `connector_resource.config.use_api_keys` field type handling fixed
+- Issue: `connector_resource.config.is_secure` field type handling fixed
+
+## Added
+- `fivetran_destination.config.catalog` missing field added
+
+## Updated
+- `connector_resource.config` is optional. Connector resource now can be created with empty config
+
+## [0.6.8](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.7...v0.6.8)
+
+## Fixed
+- Issue: Unable to create `fivetran_connector_schema_config` resource for newly created connector. 
+- Issue: `import` command fails on resource `fivetran_connector` with `Error: Plugin did not respond`.
+
+## [0.6.7](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.6...v0.6.7)
+
+## Fixed
+- Make `fivetran_destination.run_setup_tests` optional with default value `false`
+
+## [0.6.6](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.5...v0.6.6)
+
+## Fixed
+- Issue with plugin crash on `fivetran_destination` resource import
+
+## [0.6.5](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.4...v0.6.5)
+
+## Fixed
+- Fixed reading `destination_resource.config.is_private_key_encrypted` field
+- Fixed updating `daily_sync_time` field
+
+## [0.6.4](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.3...v0.6.4)
+
+## Added
+- `destination_resource.config.role` missing field added (Snowflake)
+- `destination_resource.config.is_private_key_encrypted` missing field added (Snowflake)
+- `destination_resource.config.passphrase` missing field added (Snowflake)
+- Documentation for `daily_sync_time` field added 
+
+## [0.6.3](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.3...v0.6.2)
+
+## Fixed 
+- Importing resource `fivetran_connector_schema_config` issue 
+
+## [0.6.2](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.2...v0.6.1)
+
+## Fixed
+- Issue with `daily_sync_time` when `sync_frequency` is set to 1440 
+
+## Added
+- Resource `fivetran_connector_schema_config` now supports `table.sync_mode`
 
 ## [0.6.1](https://github.com/fivetran/terraform-provider-fivetran/compare/v0.6.1...v0.6.0)
 

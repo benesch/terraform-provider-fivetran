@@ -12,10 +12,7 @@ This resource allows you to create, update, and delete connectors.
 resource "fivetran_connector" "amplitude" {
     group_id = fivetran_group.group.id
     service = "amplitude"
-    sync_frequency = 60
-    paused = false
-    pause_after_trial = false
-
+   
     destination_schema {
         name = "amplitude_connector"
     } 
@@ -62,16 +59,12 @@ resource "fivetran_connector" "amplitude" {
 
 ### Required
 
-- `config` - The connector setup configuration. The format is specific for each connector. (see [below for nested schema](#nestedblock--config))
-- `group_id` - The unique identifier for the group within the Fivetran system.
-- `pause_after_trial` - Specifies whether the connector should be paused after the free trial period has ended.
-- `paused` - Specifies whether the connector is paused.
 - `destination_schema` - The connector destination schema configuration. Defines connector schema identity in destination. (see [below for nested schema](#nestedblock--schema)) 
+- `group_id` - The unique identifier for the group within the Fivetran system.
 - `service` - The name for the connector type within the Fivetran system.
-- `sync_frequency` - The connector sync frequency in minutes. The supported values are: `5`, `15`, `30`, `60`, `120`, `180`, `360`, `480`, `720`, `1440`.
 
 ### Optional
-
+- `config` - The connector setup configuration. The format is specific for each connector. (see [below for nested schema](#nestedblock--config))
 - `auth` - The connector authorization settings. Can be used to authorize a connector using your external client credentials. The format is specific for each connector. (see [below for nested schema](#nestedblock--auth))
 - `run_setup_tests` - Specifies whether the setup tests should be run automatically.
 - `trust_certificates` - Specifies whether we should trust the certificate automatically. Applicable only for database connectors.
@@ -83,14 +76,9 @@ resource "fivetran_connector" "amplitude" {
 
 - `connected_by` 
 - `created_at` 
-- `failed_at` 
 - `id` 
 - `last_updated` 
 - `name`
-- `schedule_type` 
-- `service_version` 
-- `status` - (see [below for nested schema](#nestedatt--status))
-- `succeeded_at` 
 
 <a id="nestedblock--config"></a>
 ### Nested Schema for `config`
@@ -99,213 +87,253 @@ See [Connector Config](https://fivetran.com/docs/rest-api/connectors/config) for
 
 Optional:
 
-- `abs_connection_string` 
-- `abs_container_name` 
-- `access_key_id` 
-- `access_token` 
-- `account` 
-- `account_id` 
-- `account_ids` 
-- `accounts` 
-- `action_breakdowns` 
-- `action_report_time` 
-- `adobe_analytics_configurations` - see [below for nested schema](#nestedblock--config--adobe_analytics_configurations)
-- `advertisables` 
-- `advertisers` 
-- `advertisers_id` 
-- `aggregation` 
-- `always_encrypted` 
-- `api_access_token` 
-- `api_key` 
-- `api_keys` 
-- `api_quota` 
-- `api_secret` 
-- `api_token` 
-- `api_type`
-- `api_url` 
-- `api_version` 
-- `app_sync_mode` 
-- `append_file_option` 
-- `apps` 
-- `archive_pattern` 
-- `auth_mode` 
-- `auth_type` 
-- `aws_region_code`
-- `base_url`
-- `breakdowns` 
-- `bucket` 
-- `bucket_name` 
-- `bucket_service` 
-- `certificate` 
-- `click_attribution_window` 
-- `client_id` 
-- `client_secret` 
-- `cloud_storage_type` 
-- `columns` 
-- `compression` 
-- `config_method` 
-- `config_type` 
-- `connection_string` 
-- `connection_type`
-- `consumer_group` 
-- `consumer_key` 
-- `consumer_secret` 
-- `container_name` 
-- `conversion_report_time` 
-- `conversion_window_size` 
-- `custom_tables` - see [below for nested schema](#nestedblock--config--custom_tables)
-- `customer_id` 
-- `daily_api_call_limit` 
-- `data_center` 
-- `database` 
-- `dataset_id` 
-- `datasource` 
-- `date_granularity` 
-- `delimiter` 
-- `dimension_attributes` 
-- `dimensions` 
-- `domain` 
-- `domain_name` 
-- `elements` 
-- `email` 
-- `enable_all_dimension_combinations`
-- `encryption_key`
-- `endpoint` 
-- `engagement_attribution_window`
-- `entity_id`  
-- `escape_char` 
-- `eu_region` 
-- `external_id` 
-- `fields` 
-- `file_type` 
-- `finance_account_sync_mode` 
-- `finance_accounts` 
-- `folder_id`
-- `ftp_host` 
-- `ftp_password` 
-- `ftp_port` 
-- `ftp_user` 
-- `function` 
-- `function_app` 
-- `function_key` 
-- `function_name` 
-- `function_trigger` 
-- `gcs_bucket` 
-- `gcs_folder` 
-- `home_folder` 
-- `host` 
-- `hosts` 
-- `identity` 
-- `instance` 
-- `integration_key` 
-- `is_ftps` 
-- `is_multi_entity_feature_enabled`
-- `is_new_package`
-- `is_secure` 
-- `key` 
-- `manager_accounts` 
-- `merchant_id` 
-- `message_type` 
-- `metrics` 
-- `named_range` 
-- `network_code` 
-- `null_sequence` 
-- `oauth_token` 
-- `oauth_token_secret` 
-- `on_error` 
-- `on_premise` 
-- `organization_id` 
-- `organizations` 
-- `pages` 
-- `password` 
-- `path` 
-- `pattern` 
-- `pem_certificate` 
-- `port` 
-- `post_click_attribution_window_size` 
-- `prebuilt_report` 
-- `prefix` 
-- `private_key` 
-- `profiles` 
-- `project_credentials` - see [below for nested schema](#nestedblock--config--project_credentials)
-- `project_id` 
-- `projects` 
-- `public_key` 
-- `publication_name` 
-- `query_id` 
-- `region` 
-- `replication_slot` 
-- `report_configuration_ids` 
-- `report_suites` 
-- `report_type` 
-- `report_url` 
-- `reports` - see [below for nested schema](#nestedblock--config--reports)
-- `repositories` 
-- `resource_url` 
-- `role` 
-- `role_arn` 
-- `s3bucket` 
-- `s3external_id` 
-- `s3folder` 
-- `s3role_arn` 
-- `sales_account_sync_mode` 
-- `sales_accounts` 
-- `secret` 
-- `secret_key` 
-- `secrets` 
-- `security_protocol` 
-- `selected_exports` 
-- `server_url` 
-- `servers` 
-- `sftp_host` 
-- `sftp_is_key_pair` 
-- `sftp_password` 
-- `sftp_port` 
-- `sftp_user` 
-- `sheet_id` 
-- `shop` 
-- `sid` 
-- `site_urls` 
-- `skip_after` 
-- `skip_before` 
-- `soap_uri` 
-- `source` 
-- `sub_domain` 
-- `subdomain` 
-- `swipe_attribution_window` 
-- `sync_data_locker` 
-- `sync_format` 
-- `sync_mode` 
-- `sync_type` 
-- `technical_account_id` 
-- `test_table_name` 
-- `time_zone` 
-- `timeframe_months` 
-- `token_key` 
-- `token_secret`
-- `tunnel_host` 
-- `tunnel_port` 
-- `tunnel_user` 
-- `unique_id` 
-- `update_config_on_each_sync` 
-- `update_method` 
-- `use_api_keys` 
-- `use_webhooks` 
-- `user` 
-- `user_id` 
-- `user_key` 
-- `user_name` 
-- `user_profiles` 
-- `username` 
-- `view_attribution_window` 
-- `view_through_attribution_window_size` 
+- `abs_connection_string` (String)
+- `abs_container_name` (String)
+- `access_key` (String)
+- `access_key_id` (String)
+- `access_token` (String, Sensitive)
+- `account` (String)
+- `account_id` (String)
+- `account_ids` (List of String)
+- `accounts` (List of String)
+- `action_breakdowns` (List of String)
+- `action_report_time` (String)
+- `adobe_analytics_configurations` (Block List) (see [below for nested schema](#nestedblock--config--adobe_analytics_configurations))
+- `advertisables` (List of String)
+- `advertisers` (List of String)
+- `advertisers_id` (List of String)
+- `agent_host` (String)
+- `agent_ora_home` (String)
+- `agent_password` (String, Sensitive)
+- `agent_port` (String)
+- `agent_public_cert` (String)
+- `agent_user` (String)
+- `aggregation` (String)
+- `always_encrypted` (String)
+- `api_access_token` (String, Sensitive)
+- `api_key` (String, Sensitive)
+- `api_keys` (List of String)
+- `api_quota` (String)
+- `api_secret` (String, Sensitive)
+- `api_token` (String, Sensitive)
+- `api_type` (String)
+- `api_url` (String)
+- `api_version` (String)
+- `app_sync_mode` (String)
+- `append_file_option` (String)
+- `apps` (List of String)
+- `archive_pattern` (String)
+- `asm_option` (String)
+- `asm_oracle_home` (String)
+- `asm_password` (String, Sensitive)
+- `asm_tns` (String)
+- `asm_user` (String)
+- `auth_mode` (String)
+- `auth_type` (String)
+- `aws_region_code` (String)
+- `base_url` (String)
+- `breakdowns` (List of String)
+- `bucket` (String)
+- `bucket_name` (String)
+- `bucket_service` (String)
+- `certificate` (String)
+- `csv_definition` (String)
+- `click_attribution_window` (String)
+- `client_id` (String)
+- `client_name` (String)
+- `client_secret` (String, Sensitive)
+- `cloud_storage_type` (String)
+- `columns` (List of String)
+- `compression` (String)
+- `company_id` (String)
+- `config_method` (String)
+- `config_type` (String)
+- `connection_method` (String)
+- `connection_string` (String)
+- `connection_type` (String)
+- `consumer_group` (String)
+- `consumer_key` (String, Sensitive)
+- `consumer_secret` (String, Sensitive)
+- `container_name` (String)
+- `conversion_report_time` (String)
+- `conversion_window_size` (String)
+- `custom_tables` (Block List) (see [below for nested schema](#nestedblock--config--custom_tables))
+- `customer_id` (String)
+- `daily_api_call_limit` (String)
+- `data_center` (String)
+- `database` (String)
+- `dataset_id` (String)
+- `datasource` (String)
+- `date_granularity` (String)
+- `delimiter` (String)
+- `dimension_attributes` (List of String)
+- `dimensions` (List of String)
+- `domain` (String)
+- `domain_host_name` (String)
+- `domain_name` (String)
+- `domain_type` (String)
+- `elements` (List of String)
+- `email` (String)
+- `empty_header` (String)
+- `enable_all_dimension_combinations` (String)
+- `encryption_key` (String, Sensitive)
+- `endpoint` (String)
+- `engagement_attribution_window` (String)
+- `entity_id` (String)
+- `environment` (String)
+- `escape_char` (String)
+- `eu_region` (String)
+- `export_storage_type` (String)
+- `external_id` (String)
+- `fields` (List of String)
+- `file_type` (String)
+- `finance_account_sync_mode` (String)
+- `finance_accounts` (List of String)
+- `folder_id` (String)
+- `ftp_host` (String)
+- `ftp_password` (String, Sensitive)
+- `ftp_port` (String)
+- `ftp_user` (String)
+- `function` (String)
+- `function_app` (String)
+- `function_key` (String)
+- `function_name` (String)
+- `function_trigger` (String, Sensitive)
+- `gcs_bucket` (String)
+- `gcs_folder` (String)
+- `group_name` (String)
+- `home_folder` (String)
+- `host` (String)
+- `hosts` (List of String)
+- `identity` (String)
+- `instance` (String)
+- `integration_key` (String)
+- `is_account_level_connector` (String)
+- `is_ftps` (String)
+- `is_keypair` (String)
+- `is_multi_entity_feature_enabled` (String)
+- `is_new_package` (String)
+- `is_public` (String)
+- `is_secure` (String)
+- `is_single_table_mode` (String)
+- `key` (String)
+- `list_strategy` (String)
+- `login_password` (String, Sensitive)
+- `manager_accounts` (List of String)
+- `merchant_id` (String)
+- `message_type` (String)
+- `metrics` (List of String)
+- `named_range` (String)
+- `network_code` (String)
+- `null_sequence` (String)
+- `oauth_token` (String, Sensitive)
+- `oauth_token_secret` (String, Sensitive)
+- `on_error` (String)
+- `on_premise` (String)
+- `organization` (String)
+- `organization_id` (String)
+- `organizations` (List of String)
+- `packed_mode_tables` (List of String)
+- `pages` (List of String)
+- `password` (String, Sensitive)
+- `pat` (String, Sensitive)
+- `path` (String)
+- `pattern` (String)
+- `pdb_name` (String)
+- `pem_certificate` (String, Sensitive)
+- `port` (String)
+- `post_click_attribution_window_size` (String)
+- `prebuilt_report` (String)
+- `prefix` (String)
+- `primary_keys` (List of String)
+- `private_key` (String, Sensitive)
+- `profiles` (List of String)
+- `project_credentials` (Block List) (see [below for nested schema](#nestedblock--config--project_credentials))
+- `project_id` (String)
+- `projects` (List of String)
+- `properties` (List of String)
+- `public_key` (String)
+- `publication_name` (String)
+- `query_id` (String)
+- `region` (String)
+- `replication_slot` (String)
+- `report_configuration_ids` (List of String)
+- `report_suites` (List of String)
+- `report_type` (String)
+- `report_url` (String)
+- `reports` (Block List) (see [below for nested schema](#nestedblock--config--reports))
+- `repositories` (List of String)
+- `resource_url` (String)
+- `role` (String)
+- `role_arn` (String, Sensitive)
+- `s3bucket` (String)
+- `s3external_id` (String)
+- `s3folder` (String)
+- `s3role_arn` (String, Sensitive)
+- `sales_account_sync_mode` (String)
+- `sales_accounts` (List of String)
+- `sap_user` (String)
+- `secret` (String, Sensitive)
+- `secret_key` (String, Sensitive)
+- `secrets` (String, Sensitive)
+- `secrets_list` (Block List) (see [below for nested schema](#nestedblock--config--secrets_list))
+- `security_protocol` (String)
+- `selected_exports` (List of String)
+- `server_url` (String)
+- `servers` (String)
+- `sftp_host` (String)
+- `sftp_is_key_pair` (String)
+- `sftp_password` (String, Sensitive)
+- `sftp_port` (String)
+- `sftp_user` (String)
+- `share_url` (String)
+- `sheet_id` (String)
+- `shop` (String)
+- `sid` (String)
+- `site_urls` (List of String)
+- `skip_after` (String)
+- `skip_before` (String)
+- `soap_uri` (String)
+- `source` (String)
+- `sub_domain` (String)
+- `subdomain` (String)
+- `support_nested_columns` (String)
+- `swipe_attribution_window` (String)
+- `sync_data_locker` (String)
+- `sync_format` (String)
+- `sync_method` (String)
+- `sync_mode` (String)
+- `sync_type` (String)
+- `technical_account_id` (String)
+- `test_table_name` (String)
+- `time_zone` (String)
+- `timeframe_months` (String)
+- `tns` (String)
+- `token_key` (String, Sensitive)
+- `token_secret` (String, Sensitive)
+- `tunnel_host` (String)
+- `tunnel_port` (String)
+- `tunnel_user` (String)
+- `unique_id` (String)
+- `update_config_on_each_sync` (String)
+- `update_method` (String)
+- `use_api_keys` (String)
+- `use_oracle_rac` (String)
+- `use_webhooks` (String)
+- `user` (String)
+- `user_id` (String)
+- `user_key` (String)
+- `user_name` (String)
+- `user_profiles` (List of String)
+- `username` (String)
+- `view_attribution_window` (String)
+- `view_through_attribution_window_size` (String)
 
 Read-Only:
 
 - `authorization_method` 
 - `last_synced_changes__utc_` 
 - `latest_version` 
-- `service_version` 
 
 <a id="nestedblock--schema"></a>
 ### Nested Schema for `destination-schema`
@@ -315,6 +343,8 @@ Optional:
 - `name` - required for all connectors instead of db-like connectors, represents `config.schema` field.
 - `table` - required for some non db-like connectors, represents `config.table` field.
 - `prefix` - required only for db-like connectors, represents `config.schema_prefix` field.
+
+> Note: **name** and **prefix** are mutually exclusive for the resource, if you configure both, terraform will start to have a drift every time you make a plan/apply.
 
 See [Connector Config](https://fivetran.com/docs/rest-api/connectors/config) for details.
 
@@ -370,6 +400,14 @@ Optional:
 - `segments` 
 - `table` 
 
+<a id="nestedblock--config--secrets_list"></a>
+### Nested Schema for `config.secrets_list`
+
+Required:
+
+- `key` (String)
+- `value` (String, Sensitive)
+
 <a id="nestedblock--auth"></a>
 ### Nested Schema for `auth`
 
@@ -392,34 +430,6 @@ Optional:
 - `developer_token` 
 - `user_agent` 
 
-<a id="nestedatt--status"></a>
-### Nested Schema for `status`
-
-Read-Only:
-
-- `is_historical_sync` 
-- `setup_state` 
-- `sync_state` 
-- `tasks` see [below for nested schema](#nestedobjatt--status--tasks)
-- `update_state` 
-- `warnings` see [below for nested schema](#nestedobjatt--status--warnings)
-
-<a id="nestedobjatt--status--tasks"></a>
-### Nested Schema for `status.tasks`
-
-Read-Only:
-
-- `code` 
-- `message` 
-
-<a id="nestedobjatt--status--warnings"></a>
-### Nested Schema for `status.warnings`
-
-Read-Only:
-
-- `code` 
-- `message` 
-
 ## Import
 
 1. To import an existing `fivetran_connector` resource into your Terraform state, you need to get **Fivetran Connector ID** on the **Setup** tab of the connector page in your Fivetran dashboard.
@@ -437,7 +447,7 @@ resource "fivetran_connector" "my_imported_connector" {
 4. Run the `terraform import` command:
 
 ```
-terraform import fivetran_connector.my_imported_connector <your Fivetran Connector ID>
+terraform import fivetran_connector.my_imported_connector {your Fivetran Connector ID}
 ```
 
 5.  Use the `terraform state show` command to get the values from the state:
@@ -453,7 +463,7 @@ terraform state show 'fivetran_connector.my_imported_connector'
 
 ## GitHub connector example
 
-To authorize a GutHub connector via terraform using personal access token you should specify `auth_mode`, `username` and `pat` inside `config` block instead of `auth` and set `run_setup_tests` to `true`:
+To authorize a GitHub connector via terraform using personal access token you should specify `auth_mode`, `username` and `pat` inside `config` block instead of `auth` and set `run_setup_tests` to `true`:
 
 ```hcl
 resource "fivetran_connector" "my_github_connector" {

@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/benesch/terraform-provider-fivetran/fivetran"
 	gofivetran "github.com/fivetran/go-fivetran"
-	"github.com/fivetran/terraform-provider-fivetran/fivetran"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -15,13 +15,29 @@ import (
 
 var client *gofivetran.Client
 var testProviders map[string]*schema.Provider
-var PredefinedGroupId string = "century_leveled"
-var PredefinedUserId string = "endeavor_lock"
 var providerFactory = make(map[string]func() (*schema.Provider, error))
+var PredefinedGroupId string
+var PredefinedUserId string
 
 func init() {
-	client = gofivetran.New(os.Getenv("FIVETRAN_APIKEY"), os.Getenv("FIVETRAN_APISECRET"))
-	client.BaseURL("https://api.fivetran.com/v1")
+	var apiUrl, apiKey, apiSecret string
+	valuesToLoad := map[string]*string{
+		"FIVETRAN_API_URL":   &apiUrl,
+		"FIVETRAN_APIKEY":    &apiKey,
+		"FIVETRAN_APISECRET": &apiSecret,
+		"FIVETRAN_GROUP_ID":  &PredefinedGroupId,
+		"FIVETRAN_USER_ID":   &PredefinedUserId,
+	}
+
+	for name, value := range valuesToLoad {
+		*value = os.Getenv(name)
+		if *value == "" {
+			log.Fatalf("Environment variable %s is not set!\n", name)
+		}
+	}
+
+	client = gofivetran.New(apiKey, apiSecret)
+	client.BaseURL(apiUrl)
 	provider := fivetran.Provider()
 	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		return client, diag.Diagnostics{}
